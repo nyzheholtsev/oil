@@ -677,7 +677,11 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       // зачёркивание ведётся мазком после того, как строка дописана
       if (el._cancel && el._cancelLen) {
         var c = phase(p, cancelRange(i));
-        el._cancel.style.strokeDashoffset = (el._cancelLen * (1 - c)).toFixed(2);
+        // Без округления: остаток даже в сотые доли единицы рисуется
+        // круглым концом линии и оставляет точки на изломах зигзага.
+        el._cancel.style.strokeDashoffset = el._cancelLen * (1 - c);
+        // и страховка на случай других артефактов пунктира
+        el._cancel.style.opacity = c > 0.001 ? "1" : "0";
       }
     });
 
