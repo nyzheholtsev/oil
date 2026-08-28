@@ -3,23 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Твой первый масляный набор</title>
-<meta name="description" content="Что в наборе Schmincke Norma Blue, как им работать и что кончится первым.">
+<title>С днём рождения</title>
+<meta name="description" content="Открытка и подарок — набор для масляной живописи.">
 
 <script>
-  /* ==========================================================
-     ЕДИНСТВЕННОЕ, ЧТО НАДО ПОМЕНЯТЬ ПОТОМ.
+  /* ============================================================
+     ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай.
+     ============================================================ */
 
-     Залил видео — вставь сюда ссылку, закоммить, и всё.
-     QR-код перепечатывать не нужно, он ведёт на эту страницу.
+  const GREETING = {
+    to:   "",              // её имя. Пусто — будет просто «С днём рождения»
+    text: [
+      "",                  // первый абзац
+      "",                  // второй абзац — добавляй сколько нужно
+    ],
+    sign: "",              // подпись
+  };
 
-     Можно несколько — просто добавь строки.
-     ========================================================== */
-  const VIDEO = [
-    // { title: "Часть 1. Что у тебя в руках", url: "" },
-    // { title: "Часть 2. Как этим работать",  url: "" },
-    // { title: "Часть 3. Сушка и уборка",     url: "" },
-  ];
+  const MY_VIDEO = {
+    url:   "",             // ссылка на ТВОЁ видео. Пусто — блок не покажется
+    title: "Что это и как этим пользоваться",
+    note:  "Разбираю набор по предметам и показываю первый сеанс.",
+  };
+
+  /* Видео Schmincke вшито в разметку ниже, субтитры включаются сами.
+     Трогать не нужно. */
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +40,7 @@
   --ink:#171A22; --ink-2:#565D70; --ink-3:#868CA1;
   --rule:#D8DBE4; --rule-soft:#E6E8EF;
   --accent:#2A3E8C; --accent-ink:#2A3E8C; --accent-soft:#E3E7F6;
-  --umber:#8A4B24; --umber-soft:#F5E9E0;
+  --warm:#B8503A; --warm-soft:#F6E7E2;
   --shadow:0 1px 2px rgba(23,26,34,.05), 0 8px 24px -12px rgba(23,26,34,.18);
 }
 @media (prefers-color-scheme: dark){
@@ -41,7 +49,7 @@
     --ink:#E9EBF2; --ink-2:#9BA2B5; --ink-3:#6E7488;
     --rule:#2D313D; --rule-soft:#242833;
     --accent:#8AA0EE; --accent-ink:#A9B9F5; --accent-soft:#232B47;
-    --umber:#D79A66; --umber-soft:#33261B;
+    --warm:#E08A6E; --warm-soft:#33231D;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
   }
 }
@@ -50,7 +58,7 @@
   --ink:#E9EBF2; --ink-2:#9BA2B5; --ink-3:#6E7488;
   --rule:#2D313D; --rule-soft:#242833;
   --accent:#8AA0EE; --accent-ink:#A9B9F5; --accent-soft:#232B47;
-  --umber:#D79A66; --umber-soft:#33261B;
+  --warm:#E08A6E; --warm-soft:#33231D;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
 }
 
@@ -61,361 +69,333 @@ body{
   font-family:'Golos Text','Segoe UI',system-ui,sans-serif;
   font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
 }
-.wrap{
-  max-width:720px; margin:0 auto;
-  padding:clamp(24px,6vw,56px) clamp(16px,5vw,32px) 80px;
-  display:flex; flex-direction:column; gap:clamp(28px,5vw,44px);
-}
 h1,h2,h3{font-family:'Bitter',Georgia,serif;text-wrap:balance;margin:0}
-h1{font-size:clamp(30px,7.5vw,44px);font-weight:700;line-height:1.08;letter-spacing:-.015em}
-h2{font-size:clamp(20px,4.5vw,25px);font-weight:700;line-height:1.18;letter-spacing:-.01em}
-h3{font-size:16.5px;font-weight:600;line-height:1.3}
 p{margin:0}
 a{color:var(--accent-ink)}
 a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 
-.eyebrow{
+/* ================= HERO — единый вид в обеих темах ================= */
+.hero{
+  position:relative; overflow:hidden;
+  min-height:min(100svh,760px);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:clamp(28px,7vw,64px);
+  background:#0E1030;
+  isolation:isolate;
+}
+.hero canvas{
+  position:absolute; inset:0; width:100%; height:100%;
+  z-index:-2; display:block;
+}
+.hero::after{ /* затемнение снизу, чтобы текст читался поверх любого мазка */
+  content:""; position:absolute; inset:0; z-index:-1;
+  background:linear-gradient(180deg,rgba(14,16,48,.15) 0%,rgba(14,16,48,.55) 55%,rgba(14,16,48,.9) 100%);
+}
+.hero-inner{display:flex;flex-direction:column;gap:clamp(14px,3vw,20px);max-width:20ch}
+.hero .eyebrow{
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:11.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.72);
+}
+.hero h1{
+  font-size:clamp(44px,13vw,88px); font-weight:700; line-height:.98;
+  letter-spacing:-.025em; color:#FFF;
+}
+.hero .sub{
+  font-size:clamp(16px,3.6vw,18px); color:rgba(255,255,255,.78);
+  max-width:34ch; line-height:1.5;
+}
+.scrollhint{
+  display:flex;align-items:center;gap:9px;margin-top:clamp(10px,3vw,18px);
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);
+}
+.scrollhint span:first-child{
+  width:22px;height:22px;border:1px solid rgba(255,255,255,.35);
+  border-radius:50%;display:grid;place-items:center;font-size:10px;
+  animation:bob 2.4s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+
+/* ================= общая обёртка ================= */
+.wrap{
+  max-width:660px; margin:0 auto;
+  padding:clamp(40px,9vw,72px) clamp(18px,5vw,32px) 80px;
+  display:flex; flex-direction:column; gap:clamp(36px,7vw,60px);
+}
+
+/* ================= письмо ================= */
+.letter{display:flex;flex-direction:column;gap:20px}
+.letter p{
+  font-family:'Bitter',Georgia,serif;
+  font-size:clamp(18px,4.2vw,21px); line-height:1.62; color:var(--ink);
+}
+.letter .sign{
+  font-family:'Golos Text',sans-serif;
+  font-size:15px; color:var(--ink-3); margin-top:6px;
+}
+.letter.placeholder{
+  border:1px dashed var(--rule); border-radius:4px;
+  padding:clamp(20px,5vw,28px); gap:12px;
+}
+.letter.placeholder p{
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:13.5px; line-height:1.6; color:var(--ink-3);
+}
+.letter.placeholder code{
+  font-size:12.5px; background:var(--accent-soft); color:var(--accent-ink);
+  padding:2px 6px; border-radius:2px;
+}
+
+/* ================= видео ================= */
+.vsec{display:flex;flex-direction:column;gap:18px}
+.sechead{display:flex;flex-direction:column;gap:6px;padding-bottom:11px;border-bottom:2px solid var(--ink)}
+.sechead .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
   font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--accent-ink);margin:0;
+  color:var(--accent-ink);
 }
-.eyebrow.muted{color:var(--ink-3)}
+.sechead h2{font-size:clamp(21px,4.6vw,26px);font-weight:700;line-height:1.18;letter-spacing:-.01em}
 
-.masthead{display:flex;flex-direction:column;gap:14px}
-.lede{font-size:clamp(16.5px,3.6vw,18px);color:var(--ink-2);line-height:1.55;max-width:56ch}
-.lede strong{color:var(--ink);font-weight:600}
+.vcard{
+  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
+  overflow:hidden; box-shadow:var(--shadow);
+  display:flex; flex-direction:column;
+}
+.vframe{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vmeta{padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.vmeta h3{font-size:16.5px;font-weight:600;line-height:1.3}
+.vmeta p{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.vmeta .src{
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:11px;color:var(--ink-3);letter-spacing:.04em;
+}
+.subnote{
+  background:var(--warm-soft); border-left:2px solid var(--warm);
+  padding:12px 15px; border-radius:0 3px 3px 0;
+  font-size:14px; line-height:1.5; color:var(--ink-2);
+}
+.subnote b{color:var(--ink);font-weight:600}
 
-/* ---- video slot ---- */
-.video{
-  background:var(--surface);border:1px solid var(--rule);border-radius:4px;
-  padding:clamp(18px,4.5vw,26px);display:flex;flex-direction:column;gap:14px;
-  box-shadow:var(--shadow);
-}
-.video.empty{
-  background:none;border-style:dashed;box-shadow:none;
-  align-items:flex-start;
-}
-.video.empty p{color:var(--ink-3);font-size:15px;line-height:1.5}
-.vlinks{display:flex;flex-direction:column;gap:9px}
 .vlink{
   display:flex;align-items:center;gap:13px;
-  padding:14px 16px;border-radius:3px;
+  padding:16px 18px;border-radius:4px;
   background:var(--accent-soft);color:var(--ink);
   text-decoration:none;font-weight:500;font-size:15.5px;line-height:1.35;
+  border:1px solid var(--rule);
 }
-.vlink:hover{background:var(--accent);color:#FFF}
+.vlink:hover{background:var(--accent);color:#FFF;border-color:transparent}
 .vlink .play{
-  flex:0 0 auto;width:26px;height:26px;border-radius:50%;
-  background:var(--accent);color:#FFF;display:grid;place-items:center;
-  font-size:10px;
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:#FFF;display:grid;place-items:center;font-size:10px;
 }
 .vlink:hover .play{background:#FFF;color:var(--accent)}
-
-/* ---- key callout ---- */
-.key{
-  background:var(--accent);color:#FFF;border-radius:4px;
-  padding:clamp(20px,5vw,28px);display:flex;flex-direction:column;gap:10px;
-}
-.key p{font-size:clamp(18px,4.2vw,21px);line-height:1.4;font-weight:500}
-.key .sub{font-size:15px;font-weight:400;opacity:.82;line-height:1.5}
-:root[data-theme="dark"] .key,
-:root[data-theme="dark"] .key p{color:#0F1118}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .key,
-  :root:not([data-theme="light"]) .key p{color:#0F1118}
+.pending{
+  border:1px dashed var(--rule); border-radius:4px;
+  padding:18px; font-size:14.5px; color:var(--ink-3); line-height:1.5;
 }
 
-/* ---- sections ---- */
-section{display:flex;flex-direction:column;gap:16px}
-.sechead{display:flex;flex-direction:column;gap:6px;padding-bottom:11px;border-bottom:2px solid var(--ink)}
-
-.items{display:flex;flex-direction:column;gap:11px}
-.item{
-  background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:16px 18px;display:flex;flex-direction:column;gap:7px;
-  box-shadow:var(--shadow);
+/* ================= ссылка на инструкцию ================= */
+.guide{
+  display:flex;flex-direction:column;gap:14px;
+  background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:4px; padding:clamp(20px,5vw,28px);
 }
-.item .de{
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11.5px;color:var(--ink-3);letter-spacing:.02em;
+.guide h2{font-size:clamp(19px,4.2vw,23px);font-weight:700;line-height:1.2}
+.guide p{font-size:15px;color:var(--ink-2);line-height:1.55}
+.guide a.btn{
+  align-self:flex-start;
+  display:inline-flex;align-items:center;gap:9px;
+  background:var(--accent);color:#FFF;text-decoration:none;
+  padding:12px 20px;border-radius:3px;font-weight:600;font-size:15px;
 }
-.item p{font-size:15px;color:var(--ink-2);line-height:1.55}
-.item p b{color:var(--ink);font-weight:600}
-
-.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:12px}
-.steps li{
-  counter-increment:s;display:flex;gap:13px;align-items:baseline;
-  font-size:15.5px;line-height:1.55;color:var(--ink-2);
-}
-.steps li b{color:var(--ink);font-weight:600}
-.steps li::before{
-  content:counter(s);flex:0 0 auto;
-  font-family:'IBM Plex Mono','Consolas',monospace;font-size:12px;font-weight:500;
-  color:var(--accent-ink);background:var(--accent-soft);
-  width:23px;height:23px;display:grid;place-items:center;border-radius:50%;
-  transform:translateY(2px);
-}
-
-.warn{
-  background:var(--umber-soft);border-left:2px solid var(--umber);
-  padding:13px 16px;border-radius:0 3px 3px 0;
-  font-size:14.5px;line-height:1.5;color:var(--ink-2);
-}
-.warn b{color:var(--ink);font-weight:600}
-
-.tablebox{
-  overflow-x:auto;background:var(--surface);
-  border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);
-}
-table{border-collapse:collapse;width:100%;min-width:420px}
-th,td{text-align:left;padding:10px 15px;border-bottom:1px solid var(--rule-soft);font-size:14.5px;line-height:1.45;vertical-align:top}
-th{
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--ink-3);font-weight:500;background:var(--surface-2);
-  border-bottom:1px solid var(--rule);white-space:nowrap;
-}
-tbody tr:last-child td{border-bottom:none}
-td.de{font-family:'IBM Plex Mono','Consolas',monospace;font-size:13px;color:var(--accent-ink);white-space:nowrap}
-td.when{color:var(--ink-2);white-space:nowrap;font-size:13px}
-.note{font-size:13.5px;color:var(--ink-3);line-height:1.5}
-
-details{
-  background:var(--surface);border:1px solid var(--rule);
-  border-radius:3px;box-shadow:var(--shadow);
-}
-summary{
-  cursor:pointer;padding:14px 18px;font-weight:600;font-size:15.5px;
-  font-family:'Bitter',Georgia,serif;
-}
-details[open] summary{border-bottom:1px solid var(--rule-soft)}
-.dbody{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.guide a.btn:hover{opacity:.88}
 
 .foot{
-  border-top:1px solid var(--rule);padding-top:22px;
-  font-size:14px;color:var(--ink-3);line-height:1.55;
+  border-top:1px solid var(--rule); padding-top:22px;
+  font-size:13.5px; color:var(--ink-3); line-height:1.55;
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
+
+<header class="hero">
+  <canvas id="wash" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <p class="eyebrow">Открытка</p>
+    <h1 id="hero-title">С днём рождения</h1>
+    <p class="sub" id="hero-sub">Ты говорила, что хочешь попробовать масло. Держи.</p>
+    <div class="scrollhint"><span aria-hidden="true">&#8595;</span><span>Листай</span></div>
+  </div>
+</header>
+
 <div class="wrap">
 
-  <header class="masthead">
-    <p class="eyebrow">Schmincke Norma Blue · набор для старта</p>
-    <h1>Твой первый масляный набор</h1>
-    <p class="lede">Здесь всё, что нужно знать, чтобы начать — <strong>искать по интернету ничего не придётся</strong>. Страница живая: возвращайся, когда что-то забудется.</p>
-  </header>
+  <section class="letter" id="letter"></section>
 
-  <div id="videoslot"></div>
-
-  <div class="key">
-    <p>Растворители не нужны. Ни скипидара, ни уайт-спирита, ни запаха.</p>
-    <p class="sub">Краска разводится водой и смывается водой. При этом это настоящее масло — тот же пигмент, то же связующее, так же медленно сохнет. Слово <b>Blue</b> в названии — это не цвет, это линейка водосмешиваемого масла.</p>
-  </div>
-
-  <section>
+  <section class="vsec">
     <div class="sechead">
-      <p class="eyebrow">Пять предметов</p>
-      <h2>Что в коробке и зачем</h2>
+      <p class="eyebrow">Видео</p>
+      <h2>Как этим пользоваться</h2>
     </div>
-    <div class="items">
+    <div id="myvideo"></div>
 
-      <article class="item">
-        <h3>Краски — 8 тюбиков по 35 мл</h3>
-        <p class="de">Schmincke Norma Blue · Ölfarbe</p>
-        <p>Профессиональная линейка, не студенческая. Хватит очень надолго. <b>Белила кончатся первыми</b> — они всегда уходят быстрее всех остальных вместе взятых, это нормально.</p>
-        <p><b>Закручивай колпачок сразу</b> и вытирай резьбу тряпкой: если масло на ней засохнет, тюбик потом не открыть. Прикипел — подержи колпачок под горячей водой.</p>
-      </article>
-
-      <article class="item">
-        <h3>Медиум — 60 мл</h3>
-        <p class="de">Malmittel Blue · «средство для живописи»</p>
-        <p>Делает краску текучей и прозрачной, чуть ускоряет высыхание. <b>Первые работы можешь его вообще не трогать</b> — краска плюс капля воды, этого достаточно.</p>
-        <p>Он именно для линейки Blue. Обычное льняное масло сюда лить не надо — краска перестанет мыться водой.</p>
-      </article>
-
-      <article class="item">
-        <h3>Кисти — 6 штук</h3>
-        <p class="de">da Vinci College · синтетика, flach / rund</p>
-        <p>Синтетика тут не экономия, а <b>правильный выбор</b>: в этой краске работает вода, а натуральный волос от воды разбухает и теряет упругость. Плоские — заливки и чёткие грани, круглые — линии и детали.</p>
-      </article>
-
-      <article class="item">
-        <h3>Палитра — отрывной блок, 36 листов</h3>
-        <p class="de">Abreißpalette</p>
-        <p>Поработала — оторвала верхний лист, выбросила. Мыть нечего. <b>Заранее не отрывай</b>, работай прямо на блоке, он жёсткий и держит форму.</p>
-      </article>
-
-      <article class="item">
-        <h3>Бумага — блок 24×32, 10 листов</h3>
-        <p class="de">Ölmalblock · Grobleinen, 230 г/м²</p>
-        <p>Фактура под грубый лён, и она <b>загрунтована</b> — масло её не проест. На обычной бумаге масло со временем разъедает основу, поэтому нужна именно такая.</p>
-        <p>Десять листов — это специально. Чтобы не было страшно испортить: это не дорогой холст, это блокнот для проб.</p>
-      </article>
-
+    <div class="vcard">
+      <div class="vframe">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/H7e5FrgiM6M?cc_load_policy=1&amp;cc_lang_pref=ru&amp;hl=ru&amp;rel=0"
+          title="NORMA Blue: Malen mit wasservermalbarer Ölfarbe — Schmincke"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="vmeta">
+        <h3>Как работать с этой краской — от самих производителей</h3>
+        <p class="src">Schmincke Künstlerfarben · 4:42 · на немецком</p>
+        <p>Художница показывает весь процесс от карандашного наброска до бликов: как ограничиться тремя цветами, почему начинать со светлого и как растушёвывать границы.</p>
+      </div>
+    </div>
+    <div class="subnote">
+      <b>Русские субтитры включаются сами.</b> Если вдруг не включились — иконка ⚙ в плеере, «Субтитры» → «Перевести» → «Русский». Перевод идёт с живого немецкого текста, а не с распознавания, поэтому читается нормально.
     </div>
   </section>
 
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">Первый раз</p>
-      <h2>Как сесть и начать</h2>
-    </div>
-    <ol class="steps">
-      <li>Застели стол — газета, плёнка, что угодно.</li>
-      <li><b>Две банки воды.</b> Одна полоскать кисть, она быстро станет грязной. Вторая чистая — разводить краску.</li>
-      <li>Тряпки. Их надо сильно больше, чем кажется.</li>
-      <li>Выдави краски по краю палитры: <b>белил побольше</b>, остальных с горошину. Середину оставь под смешивание.</li>
-      <li>Кисть, чуть краски, капля воды — и мазок. Всё.</li>
-      <li><b>Не начинай с пейзажа.</b> Возьми два-три цвета и сделай растяжку от одного к другому. Или один предмет — яблоко, кружку, кубик. Задача первого раза — почувствовать материал, а не сделать картину.</li>
-      <li>Работай сеансами по часу. <b>Масло за час не сохнет</b> — можно спокойно уйти и вернуться завтра к той же работе. Это его главное преимущество перед акрилом.</li>
-    </ol>
-    <div class="warn"><b>Не размешивай краску кистью</b>, как ложкой — это её убивает. Подойдёт любой ножик, старая пластиковая карта или мастихин. И не оставляй кисть стоять в банке ворсом вниз: волос загнётся навсегда.</div>
-  </section>
-
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">После работы</p>
-      <h2>Кисти и сушка</h2>
-    </div>
-
-    <details>
-      <summary>Как мыть кисти</summary>
-      <div class="dbody">
-        <p>Мыть сразу после работы, не откладывая на утро.</p>
-        <ol class="steps">
-          <li>Сними основную краску тряпкой — просто отожми ворс в тряпку.</li>
-          <li>Тёплая вода, <b>не горячая</b>, и мыло. Мыль и крути ворсом по ладони, пока пена не станет чистой.</li>
-          <li>Обрати внимание на <b>основание ворса, у самой обоймы</b> — там краска прячется, и потом кисть дубеет.</li>
-          <li>Отожми, пальцами верни форму.</li>
-        </ol>
-        <div class="warn"><b>Суши горизонтально или ворсом вверх.</b> Никогда ворсом вниз в стакане — вода затечёт в обойму, клей разбухнет и кисть развалится.</div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Сколько сохнет работа</summary>
-      <div class="dbody">
-        <p>Масло сохнет <b>днями, а не минутами</b>. Тонкий слой становится «на отлип» за пару дней, полностью — за недели.</p>
-        <p>Подумай заранее, где лист будет лежать: горизонтально, там где его никто не заденет и не поставит сверху чашку.</p>
-        <div class="warn"><b>Не складывай листы друг на друга, пока не высохли.</b> И не суши феном и не ставь на батарею — слой потрескается. Масло должно сохнуть само.</div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Уборка и безопасность</summary>
-      <div class="dbody">
-        <div class="warn"><b>Тряпки не сминай в комок</b> и не бросай так в мусор. Расправь, дай высохнуть, потом выбрасывай. Промасленная ткань в комке может сама разогреться. Вероятность маленькая, но правило бесплатное.</div>
-        <p>Не смывай краску в раковину пачками — сначала счищай остатки на бумагу, потом уже мой.</p>
-        <p>Сама краска при нормальной работе не токсична. Просто не держи кисть во рту и мой руки после.</p>
-      </div>
-    </details>
-
-    <details>
-      <summary>Если будешь работать в несколько слоёв</summary>
-      <div class="dbody">
-        <p>Есть одно правило, и оно единственное, которое реально надо знать: <b>нижние слои жиже, верхние жирнее.</b> То есть чем выше слой, тем больше в нём медиума и меньше воды.</p>
-        <p>Если сделать наоборот — верхний слой со временем потрескается. Всё, это вся «химия», которая тебе нужна.</p>
-      </div>
-    </details>
-  </section>
-
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">Словарик</p>
-      <h2>Что написано на упаковке</h2>
-    </div>
-    <div class="tablebox">
-      <table>
-        <thead><tr><th>По-немецки</th><th>Что значит</th></tr></thead>
-        <tbody>
-          <tr><td class="de">Ölfarbe</td><td>масляная краска</td></tr>
-          <tr><td class="de">wasservermischbar</td><td>водосмешиваемая — разводится и моется водой</td></tr>
-          <tr><td class="de">Malmittel</td><td>медиум, «средство для живописи»</td></tr>
-          <tr><td class="de">Malkasten</td><td>набор в коробке</td></tr>
-          <tr><td class="de">Pinsel</td><td>кисть</td></tr>
-          <tr><td class="de">flach / rund</td><td>плоская / круглая кисть</td></tr>
-          <tr><td class="de">Abreißpalette</td><td>отрывная палитра</td></tr>
-          <tr><td class="de">Ölmalblock</td><td>блок бумаги для масла</td></tr>
-          <tr><td class="de">Grobleinen</td><td>грубый лён — фактура</td></tr>
-          <tr><td class="de">Blatt</td><td>лист</td></tr>
-          <tr><td class="de">Titanweiß</td><td>титановые белила</td></tr>
-          <tr><td class="de">Elfenbeinschwarz</td><td>чёрная «слоновая кость»</td></tr>
-          <tr><td class="de">Ultramarin</td><td>ультрамарин</td></tr>
-          <tr><td class="de">Zitronengelb</td><td>лимонный жёлтый</td></tr>
-          <tr><td class="de">Krapplack</td><td>краплак</td></tr>
-          <tr><td class="de">Umbra gebrannt</td><td>жжёная умбра</td></tr>
-          <tr><td class="de">Siena gebrannt</td><td>жжёная сиена</td></tr>
-          <tr><td class="de">Permanentgrün</td><td>перманентный зелёный</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note">Это слова, которые чаще всего встречаются в стартовых наборах — точный состав смотри прямо на тюбиках.</p>
-  </section>
-
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">Когда закончится</p>
-      <h2>Что докупать и как искать</h2>
-    </div>
-    <p class="lede">Водосмешиваемое масло делают три бренда: Schmincke <strong>Norma Blue</strong>, Royal Talens <strong>Cobra</strong> и Winsor&nbsp;&amp;&nbsp;Newton <strong>Artisan</strong>. Ищи по этим словам — они взаимозаменяемы между собой.</p>
-    <div class="tablebox">
-      <table>
-        <thead><tr><th>Что</th><th>Когда</th><th>Чем заменить</th></tr></thead>
-        <tbody>
-          <tr><td>Белила</td><td class="when">первыми</td><td>Titanweiß / Titanium White любой из трёх линеек</td></tr>
-          <tr><td>Бумага, 10 листов</td><td class="when">10 работ</td><td>холст на картоне — есть везде и стоит копейки</td></tr>
-          <tr><td>Палитра, 36 листов</td><td class="when">долго</td><td>любая отрывная палитра, стекло, керамическая плитка</td></tr>
-          <tr><td>Медиум, 60 мл</td><td class="when">очень долго</td><td>Cobra Painting Medium или Norma Blue Malmittel</td></tr>
-          <tr><td>Остальные краски</td><td class="when">месяцы</td><td>—</td></tr>
-          <tr><td>Кисти</td><td class="when">год и больше</td><td>любая синтетика для масла или акрила</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="note">Из полезного, чего в наборе нет: мастихин для смешивания и мыло для кистей. Вместе — меньше десяти евро, есть в любом худмаге.</p>
+  <section class="guide">
+    <h2>Вся практика — отдельно</h2>
+    <p>Что за чем идёт, как мыть кисти, сколько сохнет, что написано на немецких тюбиках и что докупать, когда закончится. Чтобы не искать по интернету.</p>
+    <a class="btn" href="guide/">Открыть инструкцию &#8594;</a>
   </section>
 
   <footer class="foot">
-    Набор собран в Германии. Такие краски здесь найти проще — поэтому едут оттуда.
+    Набор собран в Германии — такие краски здесь найти проще.
   </footer>
 
 </div>
 
 <script>
 (function () {
-  var slot = document.getElementById("videoslot");
-  var list = (typeof VIDEO !== "undefined" ? VIDEO : []).filter(function (v) {
-    return v && v.url;
-  });
+  /* ---------- письмо ---------- */
+  var L = document.getElementById("letter");
+  var paras = (GREETING.text || []).filter(function (s) { return s && s.trim(); });
 
-  if (!list.length) {
-    slot.className = "video empty";
-    slot.innerHTML =
-      '<p class="eyebrow muted">Видео</p>' +
-      "<p>Скоро здесь появятся видео — где я показываю всё то же самое руками. " +
-      "Адрес страницы не поменяется, просто загляни позже.</p>";
-    return;
+  if (GREETING.to && GREETING.to.trim()) {
+    document.getElementById("hero-title").textContent =
+      "С днём рождения, " + GREETING.to.trim();
   }
 
-  var html =
-    '<p class="eyebrow">Видео</p><div class="vlinks">';
-  list.forEach(function (v) {
-    var a = document.createElement("a");
-    a.href = v.url;
-    html +=
-      '<a class="vlink" href="' + a.href + '" target="_blank" rel="noopener">' +
-      '<span class="play" aria-hidden="true">&#9654;</span>' +
-      '<span></span></a>';
-  });
-  html += "</div>";
-  slot.className = "video";
-  slot.innerHTML = html;
+  if (paras.length) {
+    paras.forEach(function (t) {
+      var p = document.createElement("p");
+      p.textContent = t;
+      L.appendChild(p);
+    });
+    if (GREETING.sign && GREETING.sign.trim()) {
+      var s = document.createElement("p");
+      s.className = "sign";
+      s.textContent = GREETING.sign.trim();
+      L.appendChild(s);
+    }
+  } else {
+    L.className = "letter placeholder";
+    var a = document.createElement("p");
+    a.textContent = "Здесь будет поздравление. Открой index.html, найди блок GREETING в самом верху и заполни:";
+    var b = document.createElement("p");
+    b.innerHTML = "<code>to</code> — её имя · <code>text</code> — абзацы · <code>sign</code> — подпись";
+    var c = document.createElement("p");
+    c.textContent = "Пока пусто — этот блок видит только тот, кто откроет страницу. Не забудь.";
+    L.appendChild(a); L.appendChild(b); L.appendChild(c);
+  }
 
-  // текст ставим отдельно, чтобы не собирать разметку из строк
-  var anchors = slot.querySelectorAll(".vlink span:last-child");
-  list.forEach(function (v, i) {
-    if (anchors[i]) anchors[i].textContent = v.title || "Смотреть";
+  /* ---------- моё видео ---------- */
+  var M = document.getElementById("myvideo");
+  if (MY_VIDEO.url && MY_VIDEO.url.trim()) {
+    var link = document.createElement("a");
+    link.className = "vlink";
+    link.href = MY_VIDEO.url.trim();
+    link.target = "_blank";
+    link.rel = "noopener";
+    var icon = document.createElement("span");
+    icon.className = "play";
+    icon.setAttribute("aria-hidden", "true");
+    icon.innerHTML = "&#9654;";
+    var label = document.createElement("span");
+    label.textContent = MY_VIDEO.title || "Смотреть";
+    link.appendChild(icon);
+    link.appendChild(label);
+    M.appendChild(link);
+  } else {
+    var d = document.createElement("div");
+    d.className = "pending";
+    d.textContent = "Моё видео появится здесь чуть позже — адрес страницы не поменяется.";
+    M.appendChild(d);
+  }
+
+  /* ---------- живописный фон ----------
+     Мягкие пятна в духе размытого масляного мазка.
+     Рисуется один раз, без анимации: это фон, а не аттракцион. */
+  var cv = document.getElementById("wash");
+  if (!cv || !cv.getContext) return;
+  var ctx = cv.getContext("2d");
+
+  function paint() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    ctx.fillStyle = "#0E1030";
+    ctx.fillRect(0, 0, w, h);
+
+    // палитра набора: ультрамарин, краплак, умбра, немного белил
+    var blobs = [
+      { x:.18, y:.22, r:.62, c:"42,62,140" },
+      { x:.82, y:.14, r:.55, c:"92,58,120" },
+      { x:.68, y:.62, r:.70, c:"170,72,58" },
+      { x:.12, y:.78, r:.58, c:"38,44,96" },
+      { x:.48, y:.40, r:.45, c:"228,210,196" },
+    ];
+    var base = Math.max(w, h);
+    blobs.forEach(function (b) {
+      var g = ctx.createRadialGradient(
+        b.x * w, b.y * h, 0,
+        b.x * w, b.y * h, b.r * base
+      );
+      g.addColorStop(0, "rgba(" + b.c + ",.55)");
+      g.addColorStop(.45, "rgba(" + b.c + ",.20)");
+      g.addColorStop(1, "rgba(" + b.c + ",0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+    });
+
+    // Лёгкое зерно, чтобы градиенты не полосили.
+    // Генерим маленький тайл и размножаем узором — так быстрее,
+    // чем считать шум на весь холст.
+    var gc = document.createElement("canvas");
+    gc.width = gc.height = 128;
+    var gx = gc.getContext("2d");
+    var n = gx.createImageData(128, 128), d = n.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = (Math.random() * 255) | 0;
+      d[i] = d[i + 1] = d[i + 2] = v;
+      d[i + 3] = 255;
+    }
+    gx.putImageData(n, 0, 0);
+    ctx.globalAlpha = .04;
+    ctx.fillStyle = ctx.createPattern(gc, "repeat");
+    ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = 1;
+  }
+
+  paint();
+  var t;
+  window.addEventListener("resize", function () {
+    clearTimeout(t); t = setTimeout(paint, 200);
   });
 })();
 </script>
