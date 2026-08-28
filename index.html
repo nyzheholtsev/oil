@@ -62,14 +62,36 @@
     sign: "",              // подпись
   };
 
-  // Нижняя часть страницы (письмо, видео, инструкция) временно спрятана,
-  // чтобы страница кончалась вместе с анимацией. true — вернуть обратно.
-  const SHOW_CONTENT = false;
+  // Нижняя часть страницы (письмо и три кнопки).
+  const SHOW_CONTENT = true;
 
-  const MY_VIDEO = {
-    url:   "",             // ссылка на ТВОЁ видео. Пусто — блок не покажется
-    title: "Что это и как этим пользоваться",
-  };
+  // Три кнопки внизу открытки.
+  //   url пустой  — кнопка вообще не показывается;
+  //   ссылка на YouTube — открывает плеер прямо здесь, не уводя со страницы;
+  //   любой другой адрес — обычная ссылка.
+  //   icon: "heart" | "sound" | "page"
+  const LINKS = [
+    {
+      icon:  "heart",
+      title: "Видео-поздравление",
+      note:  "от меня, лично",
+      url:   "",                       // ← сюда ссылку на твоё видео
+    },
+    {
+      icon:  "sound",
+      title: "Как этим пользоваться",
+      note:  "видео от самих Schmincke",
+      url:   "https://youtu.be/H7e5FrgiM6M",
+      hint:  "Русские субтитры включаются сами. Если вдруг нет — шестерёнка " +
+             "в плеере, «Субтитры» → «Перевести» → «Русский».",
+    },
+    {
+      icon:  "page",
+      title: "Инструкция",
+      note:  "всё то же самое текстом",
+      url:   "guide/",
+    },
+  ];
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -304,15 +326,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
   font-size:clamp(18px,4vw,21px);color:var(--ink-2);
 }
-.letter.placeholder{border:1px dashed var(--rule);border-radius:5px;padding:clamp(20px,5vw,28px);gap:11px}
-.letter.placeholder p{
   font-family:'IBM Plex Mono','Consolas',monospace;
   font-size:13px;line-height:1.6;color:var(--ink-3);
 }
-.letter.placeholder code{font-size:12.5px;background:var(--accent-soft);color:var(--accent-ink);padding:2px 6px;border-radius:2px}
 
-/* ===== секции ===== */
-.vsec,.guide{display:flex;flex-direction:column;gap:17px}
+/* ===== три кнопки ===== */
+.links{display:flex;flex-direction:column;gap:clamp(18px,4vw,24px)}
 .sechead{display:flex;flex-direction:column;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
 .sechead .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
@@ -324,44 +343,52 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   font-size:clamp(26px,6vw,34px);font-weight:500;line-height:1.1;margin:0;
 }
 
-.vcard{
-  background:var(--surface);border:1px solid var(--rule);border-radius:5px;
-  overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;
+.lnks{display:flex;flex-direction:column;gap:11px}
+.lnk{
+  display:flex;align-items:center;gap:15px;width:100%;
+  padding:15px 17px;border-radius:6px;text-align:left;
+  background:var(--surface); border:1px solid var(--rule);
+  box-shadow:var(--shadow); color:var(--ink); text-decoration:none;
+  font:inherit; cursor:pointer;
+  transition:border-color .16s ease, transform .16s ease;
 }
-.vframe{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+.lnk:hover{border-color:var(--accent);transform:translateY(-1px)}
+.lnk:active{transform:translateY(0)}
+.lnk[aria-expanded="true"]{border-color:var(--accent)}
+
+.lico{
+  flex:0 0 auto; width:clamp(46px,12vw,54px); aspect-ratio:1;
+  border-radius:50%; background:var(--accent-soft); color:var(--accent);
+  display:grid; place-items:center;
+}
+.lico svg{width:60%;height:60%;display:block}
+
+.ltxt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 auto}
+.ltxt b{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(20px,4.8vw,25px); font-weight:600; line-height:1.12;
+}
+.ltxt i{font-style:normal;font-size:13.5px;line-height:1.4;color:var(--ink-2)}
+
+.larr{flex:0 0 auto;color:var(--accent);font-size:18px;line-height:1;
+      transition:transform .16s ease}
+.lnk:hover .larr{transform:translateX(3px)}
+.lnk[aria-expanded="true"] .larr{transform:rotate(90deg)}
+
+/* плеер раскрывается прямо под кнопками, страница не меняется */
+.player[hidden]{display:none}
+.player{display:flex;flex-direction:column;gap:10px}
+.vframe{
+  position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  border:1px solid var(--rule);border-radius:6px;overflow:hidden;
+}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vmeta{padding:16px 18px;display:flex;flex-direction:column;gap:6px}
-.vmeta h3{font-family:'Golos Text',sans-serif;font-size:16px;font-weight:600;line-height:1.3;margin:0}
-.vmeta p{font-size:14.5px;color:var(--ink-2);line-height:1.5}
-.vmeta .src{font-family:'IBM Plex Mono','Consolas',monospace;font-size:11px;color:var(--ink-3)}
-.subnote{
+.pnote{
   background:var(--accent-soft);border-left:2px solid var(--accent);
-  padding:12px 15px;border-radius:0 3px 3px 0;font-size:14px;line-height:1.5;color:var(--ink-2);
+  padding:11px 14px;border-radius:0 3px 3px 0;
+  font-size:13.5px;line-height:1.5;color:var(--ink-2);
 }
-.subnote b{color:var(--ink);font-weight:600}
-
-.vlink{
-  display:flex;align-items:center;gap:13px;padding:16px 18px;border-radius:5px;
-  background:var(--accent-soft);color:var(--ink);text-decoration:none;
-  font-weight:500;font-size:15.5px;line-height:1.35;border:1px solid var(--rule);
-}
-.vlink:hover{background:var(--accent);color:#FFF;border-color:transparent}
-.vlink .play{
-  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
-  background:var(--accent);color:#FFF;display:grid;place-items:center;font-size:10px;
-}
-.vlink:hover .play{background:#FFF;color:var(--accent)}
-.pending{border:1px dashed var(--rule);border-radius:5px;padding:18px;font-size:14.5px;color:var(--ink-3);line-height:1.5}
-
-.guide{background:var(--surface-2);border:1px solid var(--rule);border-radius:5px;padding:clamp(20px,5vw,28px);gap:13px}
-.guide h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(23px,5vw,29px);font-weight:500;line-height:1.15;margin:0}
-.guide p{font-size:15px;color:var(--ink-2);line-height:1.55}
-.guide a.btn{
-  align-self:flex-start;display:inline-flex;align-items:center;gap:9px;
-  background:var(--accent);color:#FFF;text-decoration:none;
-  padding:12px 20px;border-radius:3px;font-weight:600;font-size:15px;
-}
-.guide a.btn:hover{opacity:.88}
+.pnote:empty{display:none}
 
 .foot{
   border-top:1px solid var(--rule);padding-top:22px;
@@ -382,6 +409,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   <filter id="ink" x="-10%" y="-20%" width="120%" height="140%">
     <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="9" result="n"/>
     <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="ink-icon" x="-15%" y="-15%" width="130%" height="130%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="5" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="0.9" xChannelSelector="R" yChannelSelector="G"/>
   </filter>
   <filter id="heart-brush" x="-25%" y="-25%" width="150%" height="150%">
     <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="4" result="n"/>
@@ -448,37 +479,20 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
   <section class="letter" id="letter"></section>
 
-  <section class="vsec">
+  <section class="links">
     <div class="sechead">
-      <p class="eyebrow">Видео</p>
-      <h2>Как этим пользоваться</h2>
+      <p class="eyebrow">Подарок</p>
+      <h2>Что дальше</h2>
     </div>
-    <div id="myvideo"></div>
 
-    <div class="vcard">
-      <div class="vframe">
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/H7e5FrgiM6M?cc_load_policy=1&amp;cc_lang_pref=ru&amp;hl=ru&amp;rel=0"
-          title="NORMA Blue — Schmincke Künstlerfarben"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen loading="lazy"></iframe>
-      </div>
-      <div class="vmeta">
-        <h3>Как работать с этой краской — от самих производителей</h3>
-        <p class="src">Schmincke Künstlerfarben · 4:42 · на немецком</p>
-        <p>Художница показывает весь процесс: как ограничиться тремя цветами, почему начинать со светлого и как растушёвывать границы.</p>
-      </div>
-    </div>
-    <div class="subnote">
-      <b>Русские субтитры включаются сами.</b> Если вдруг нет — шестерёнка в плеере, «Субтитры» → «Перевести» → «Русский».
-    </div>
-  </section>
+    <nav class="lnks" id="lnks"></nav>
 
-  <section class="guide">
-    <h2>Вся практика — отдельно</h2>
-    <p>Что за чем идёт, как мыть кисти, сколько сохнет, что написано на немецких тюбиках и что докупать, когда закончится.</p>
-    <a class="btn" href="guide/">Открыть инструкцию &#8594;</a>
+    <div class="player" id="player" hidden>
+      <div class="vframe"><iframe id="pframe" title="Видео"
+        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+      <p class="pnote" id="pnote"></p>
+    </div>
   </section>
 
   <footer class="foot">
@@ -1219,37 +1233,96 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       L.appendChild(row);
     }
   } else {
-    L.className = "letter placeholder";
-    [["Здесь будет поздравление. Открой index.html, найди блок GREETING в самом верху и заполни:", 0],
-     ["<code>to</code> — её имя · <code>text</code> — абзацы · <code>sign</code> — подпись", 1],
-     ["Пока пусто — этот блок видит любой, кто откроет страницу. Не забудь.", 0]
-    ].forEach(function (row) {
-      var el = document.createElement("p");
-      if (row[1]) { el.innerHTML = row[0]; } else { el.textContent = row[0]; }
-      L.appendChild(el);
-    });
+    // Пусто — просто не показываем. Открытка и без письма закончена:
+    // всё поздравление уже написано в анимации.
+    L.style.display = "none";
   }
 
-  /* ---------------- моё видео ---------------- */
-  var M = document.getElementById("myvideo");
-  if (MY_VIDEO.url && MY_VIDEO.url.trim()) {
-    var a = document.createElement("a");
-    a.className = "vlink";
-    a.href = MY_VIDEO.url.trim();
-    a.target = "_blank"; a.rel = "noopener";
-    var ic = document.createElement("span");
-    ic.className = "play"; ic.setAttribute("aria-hidden", "true");
-    ic.innerHTML = "&#9654;";
-    var lb = document.createElement("span");
-    lb.textContent = MY_VIDEO.title || "Смотреть";
-    a.appendChild(ic); a.appendChild(lb);
-    M.appendChild(a);
-  } else {
-    var d = document.createElement("div");
-    d.className = "pending";
-    d.textContent = "Моё видео появится здесь чуть позже — адрес страницы не поменяется.";
-    M.appendChild(d);
+  /* ---------------- три кнопки ---------------- */
+  // Рисованные значки: те же мазки, что и во всей открытке, только
+  // фильтр помягче — на 30 пикселях сильная дрожь превратилась бы в кашу.
+  var ICONS = {
+    heart:
+      '<path d="M24,40.5 C24,40.5 6.5,28.5 6.5,17.8 C6.5,11.2 11,7.5 15.6,7.5 ' +
+      'C19.5,7.5 22.4,10.2 24,13.2 C25.6,10.2 28.5,7.5 32.4,7.5 ' +
+      'C37,7.5 41.5,11.2 41.5,17.8 C41.5,28.5 24,40.5 24,40.5 Z"/>' +
+      '<path d="M20.4,16.4 L29.8,22.1 L20.4,27.8 Z" fill="currentColor" stroke-width="1.6"/>',
+    sound:
+      '<path d="M9,14 L25.5,24 L9,34 Z" fill="currentColor" stroke-width="1.6"/>' +
+      '<path d="M31,18.5 C34.6,21.4 34.6,26.6 31,29.5"/>' +
+      '<path d="M37.5,13 C43.6,18.4 43.6,29.6 37.5,35"/>',
+    page:
+      '<path d="M12.5,6.5 L29,6.5 L36,13.5 L36,41.5 L12.5,41.5 Z"/>' +
+      '<path d="M28.8,6.7 L28.8,13.6 L35.8,13.6"/>' +
+      '<path d="M17.5,21 C21,19.9 25.6,22 31.5,20.7" stroke-width="2.2"/>' +
+      '<path d="M17.5,27 C21.6,25.9 26.8,28 31.5,26.7" stroke-width="2.2"/>' +
+      '<path d="M17.5,33 C20.6,32 24.3,34 27.8,32.7" stroke-width="2.2"/>'
+  };
+
+  function iconSvg(name) {
+    var body = ICONS[name] || ICONS.page;
+    return '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" ' +
+           'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" ' +
+           'aria-hidden="true"><g filter="url(#ink-icon)">' + body + '</g></svg>';
   }
+
+  // Ютубовский адрес в любом виде -> идентификатор ролика.
+  function ytId(u) {
+    var m = /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/.exec(u || "");
+    return m ? m[1] : null;
+  }
+
+  var lnksEl  = document.getElementById("lnks");
+  var playEl  = document.getElementById("player");
+  var frameEl = document.getElementById("pframe");
+  var noteEl  = document.getElementById("pnote");
+  var openBtn = null;
+
+  function closePlayer() {
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    openBtn = null;
+    playEl.hidden = true;
+    frameEl.removeAttribute("src");     // иначе ролик играет в скрытом блоке
+    noteEl.textContent = "";
+  }
+
+  function openPlayer(btn, id, hint) {
+    if (openBtn === btn) { closePlayer(); return; }
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
+    openBtn = btn;
+    btn.setAttribute("aria-expanded", "true");
+    frameEl.src = "https://www.youtube-nocookie.com/embed/" + id +
+                  "?cc_load_policy=1&cc_lang_pref=ru&hl=ru&rel=0&autoplay=1";
+    noteEl.textContent = hint || "";
+    playEl.hidden = false;
+    playEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  (typeof LINKS !== "undefined" ? LINKS : []).forEach(function (e) {
+    var url = (e.url || "").trim();
+    if (!url) return;                   // нечего открывать — нечего и показывать
+
+    var id  = ytId(url);
+    var el  = document.createElement(id ? "button" : "a");
+
+    el.className = "lnk";
+    el.innerHTML =
+      '<span class="lico">' + iconSvg(e.icon) + '</span>' +
+      '<span class="ltxt"><b></b><i></i></span>' +
+      '<span class="larr" aria-hidden="true">&#8594;</span>';
+    el.querySelector("b").textContent = e.title || "";
+    el.querySelector("i").textContent = e.note  || "";
+
+    if (id) {
+      el.type = "button";
+      el.setAttribute("aria-expanded", "false");
+      el.addEventListener("click", function () { openPlayer(el, id, e.hint); });
+    } else {
+      el.href = url;
+      if (/^https?:/i.test(url)) { el.target = "_blank"; el.rel = "noopener"; }
+    }
+    lnksEl.appendChild(el);
+  });
 
   /* ---------------- живописный фон ---------------- */
   var cv = document.getElementById("wash");
