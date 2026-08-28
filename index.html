@@ -75,7 +75,7 @@
       icon:  "heart",
       title: "Видео-поздравление",
       note:  "от меня, лично",
-      url:   "",                       // ← сюда ссылку на твоё видео
+      url:   "https://youtu.be/IlnSK2TWHuk",
     },
     {
       icon:  "sound",
@@ -89,14 +89,14 @@
       icon:  "page",
       title: "Инструкция",
       note:  "всё то же самое текстом",
-      url:   "guide/",
+      opens: "guide",      // раскрывается прямо здесь, а не уводит на другую страницу
     },
   ];
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Bitter:wght@600;700&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 
 <style>
 /* ===== палитра: краплак и розовая марена ===== */
@@ -106,6 +106,7 @@
   --rule:#E8D2D8; --rule-soft:#F2E3E7;
   --accent:#B03357; --accent-ink:#9C2A4C; --accent-soft:#FAE3E9;
   --deep:#2E0E1D;
+  --umber:#8A4B24; --umber-soft:#F7EBE1;
   --shadow:0 1px 2px rgba(42,17,25,.05), 0 10px 28px -14px rgba(42,17,25,.22);
 }
 @media (prefers-color-scheme: dark){
@@ -114,6 +115,7 @@
     --ink:#F5E6EA; --ink-2:#C4A0AC; --ink-3:#8E6C78;
     --rule:#3A2029; --rule-soft:#2C1720;
     --accent:#E8869F; --accent-ink:#F0A0B4; --accent-soft:#331823;
+    --umber:#D79A66; --umber-soft:#33241B;
     --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -14px rgba(0,0,0,.7);
   }
 }
@@ -122,6 +124,7 @@
   --ink:#F5E6EA; --ink-2:#C4A0AC; --ink-3:#8E6C78;
   --rule:#3A2029; --rule-soft:#2C1720;
   --accent:#E8869F; --accent-ink:#F0A0B4; --accent-soft:#331823;
+  --umber:#D79A66; --umber-soft:#33241B;
   --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -14px rgba(0,0,0,.7);
 }
 
@@ -330,15 +333,110 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   font-size:13px;line-height:1.6;color:var(--ink-3);
 }
 
+/* ===== инструкция внутри открытки =====
+   Раньше это была отдельная страница со своей сине-графитовой темой.
+   Внутри розовой открытки чужая палитра смотрелась бы заплаткой,
+   поэтому цвета берутся общие, а собственной осталась типографика:
+   Bitter в заголовках, моноширинный в подписях, таблицы. Всё
+   заперто в .gd — у открытки свои .sechead и .eyebrow, они разные. */
+.gd{display:flex;flex-direction:column;gap:clamp(26px,5vw,40px);padding-top:4px}
+.gd section{display:flex;flex-direction:column;gap:15px}
+.gd h2,.gd h3{font-family:'Bitter',Georgia,serif;text-wrap:balance;margin:0}
+.gd h2{font-size:clamp(20px,4.5vw,25px);font-weight:700;line-height:1.18;letter-spacing:-.01em}
+.gd h3{font-size:16.5px;font-weight:600;line-height:1.3}
+.gd p{margin:0}
+.gd .sechead{display:flex;flex-direction:column;gap:6px;padding-bottom:11px;
+             border-bottom:2px solid var(--ink)}
+.gd .eyebrow{
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent-ink);margin:0;
+}
+.gd .lede{font-size:clamp(15.5px,3.4vw,17px);color:var(--ink-2);line-height:1.55;max-width:56ch}
+.gd .lede strong{color:var(--ink);font-weight:600}
+
+.gd .key{
+  background:var(--accent);border-radius:4px;color:#FFF;
+  padding:clamp(18px,4.5vw,26px);display:flex;flex-direction:column;gap:10px;
+}
+.gd .key p{font-size:clamp(17px,4vw,20px);line-height:1.4;font-weight:500;color:#FFF}
+.gd .key .sub{font-size:14.5px;font-weight:400;line-height:1.5;color:rgba(255,255,255,.87)}
+/* в тёмной теме акцент светлый — текст на нём должен стать тёмным */
+:root[data-theme="dark"] .gd .key,
+:root[data-theme="dark"] .gd .key p{color:#2A1119}
+:root[data-theme="dark"] .gd .key .sub{color:rgba(42,17,25,.78)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .gd .key,
+  :root:not([data-theme="light"]) .gd .key p{color:#2A1119}
+  :root:not([data-theme="light"]) .gd .key .sub{color:rgba(42,17,25,.78)}
+}
+
+.gd .items{display:flex;flex-direction:column;gap:11px}
+.gd .item{
+  background:var(--surface);border:1px solid var(--rule);border-radius:4px;
+  padding:15px 17px;display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow);
+}
+.gd .item .de{font-family:'IBM Plex Mono','Consolas',monospace;font-size:11.5px;color:var(--ink-3)}
+.gd .item p{font-size:15px;color:var(--ink-2);line-height:1.55}
+.gd .item p b{color:var(--ink);font-weight:600}
+
+.gd .steps{margin:0;padding:0;list-style:none;counter-reset:s;
+           display:flex;flex-direction:column;gap:12px}
+.gd .steps li{
+  counter-increment:s;display:flex;gap:13px;align-items:baseline;
+  font-size:15.5px;line-height:1.55;color:var(--ink-2);
+}
+.gd .steps li b{color:var(--ink);font-weight:600}
+.gd .steps li::before{
+  content:counter(s);flex:0 0 auto;
+  font-family:'IBM Plex Mono','Consolas',monospace;font-size:12px;font-weight:500;
+  color:var(--accent-ink);background:var(--accent-soft);
+  width:23px;height:23px;display:grid;place-items:center;border-radius:50%;
+  transform:translateY(2px);
+}
+
+.gd .warn{
+  background:var(--umber-soft);border-left:2px solid var(--umber);
+  padding:13px 16px;border-radius:0 3px 3px 0;
+  font-size:14.5px;line-height:1.5;color:var(--ink-2);
+}
+.gd .warn b{color:var(--ink);font-weight:600}
+.gd .note{font-size:13.5px;color:var(--ink-3);line-height:1.5}
+
+.gd .tablebox{
+  overflow-x:auto;background:var(--surface);
+  border:1px solid var(--rule);border-radius:4px;box-shadow:var(--shadow);
+}
+.gd table{border-collapse:collapse;width:100%;min-width:420px}
+.gd th,.gd td{text-align:left;padding:10px 15px;border-bottom:1px solid var(--rule-soft);
+              font-size:14.5px;line-height:1.45;vertical-align:top}
+.gd th{
+  font-family:'IBM Plex Mono','Consolas',monospace;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;background:var(--surface-2);
+  border-bottom:1px solid var(--rule);white-space:nowrap;
+}
+.gd tbody tr:last-child td{border-bottom:none}
+.gd td.de{font-family:'IBM Plex Mono','Consolas',monospace;font-size:13px;
+          color:var(--accent-ink);white-space:nowrap}
+.gd td.when{color:var(--ink-2);white-space:nowrap;font-size:13px}
+
+.gd details{background:var(--surface);border:1px solid var(--rule);
+            border-radius:4px;box-shadow:var(--shadow)}
+.gd summary{cursor:pointer;padding:14px 17px;font-weight:600;font-size:15.5px;
+            font-family:'Bitter',Georgia,serif}
+.gd details[open] summary{border-bottom:1px solid var(--rule-soft)}
+.gd .dbody{padding:16px 17px;display:flex;flex-direction:column;gap:12px}
+
 /* ===== три кнопки ===== */
 .links{display:flex;flex-direction:column;gap:clamp(18px,4vw,24px)}
-.sechead{display:flex;flex-direction:column;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
-.sechead .eyebrow{
+.lhead{display:flex;flex-direction:column;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+.lhead .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
   font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
   color:var(--accent-ink);
 }
-.sechead h2{
+.lhead h2{
   font-family:'Cormorant Garamond',Georgia,serif;
   font-size:clamp(26px,6vw,34px);font-weight:500;line-height:1.1;margin:0;
 }
@@ -376,7 +474,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 .lnk[aria-expanded="true"] .larr{transform:rotate(90deg)}
 
 /* плеер раскрывается прямо под кнопками, страница не меняется */
-.player[hidden]{display:none}
+.player[hidden],.gd[hidden]{display:none}
 .player{display:flex;flex-direction:column;gap:10px}
 .vframe{
   position:relative;width:100%;aspect-ratio:16/9;background:#000;
@@ -480,7 +578,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   <section class="letter" id="letter"></section>
 
   <section class="links">
-    <div class="sechead">
+    <div class="lhead">
       <p class="eyebrow">Подарок</p>
       <h2>Что дальше</h2>
     </div>
@@ -492,6 +590,277 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
       <p class="pnote" id="pnote"></p>
+    </div>
+
+    <div class="gd" id="guide" hidden>
+    <div class="key">
+      <p>Растворители не нужны. Ни скипидара, ни уайт-спирита, ни запаха.</p>
+      <p class="sub">Краска разводится водой и смывается водой — даже с рук, обычным мылом, перчатки не нужны. При этом это настоящее масло: тот же пигмент, то же связующее, так же медленно сохнет. Слово <b>Blue</b> в названии — это не цвет, это линейка водосмешиваемого масла.</p>
+    </div>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Четыре предмета</p>
+        <h2>Что в коробке и зачем</h2>
+      </div>
+      <div class="items">
+
+        <article class="item">
+          <h3>Краски — 8 тюбиков по 35 мл</h3>
+          <p class="de">Schmincke Norma Blue · Ölfarbe</p>
+          <p>Профессиональная линейка, не студенческая. Хватит очень надолго. <b>Белила кончатся первыми</b> — они всегда уходят быстрее всех остальных вместе взятых, это нормально.</p>
+          <p>Краски веганские, и <b>в них нет кобальта, кадмия и оксида цинка</b> — то есть как раз тех пигментов, из-за которых классическое масло считают токсичным.</p>
+          <p><b>Закручивай колпачок сразу</b> и вытирай резьбу тряпкой: если масло на ней засохнет, тюбик потом не открыть. Прикипел — подержи колпачок под горячей водой.</p>
+        </article>
+
+        <article class="item">
+          <h3>Медиум — 60 мл</h3>
+          <p class="de">Malmittel Blue · «средство для живописи»</p>
+          <p>Делает краску текучей и прозрачной и даёт то самое «масляное» ощущение под кистью — заметно сильнее, чем если просто развести водой. <b>Первые работы можешь его не трогать</b>: краска плюс капля воды, этого достаточно.</p>
+          <p>Он именно для линейки Blue. Обычное льняное масло сюда лить не надо — краска перестанет мыться водой. Подробно про него — <b>отдельный раздел ниже</b>.</p>
+        </article>
+
+        <article class="item">
+          <h3>Кисти — 6 штук</h3>
+          <p class="de">da Vinci College · синтетика, flach / rund</p>
+          <p>Синтетика тут не экономия, а <b>правильный выбор</b>: в этой краске работает вода, а натуральный волос от воды разбухает и теряет упругость. Плоские — заливки и растушёвка границ, круглые — и заливки, и мелкие детали, включая блики.</p>
+        </article>
+
+        <article class="item">
+          <h3>Бумага — блок 24×32, 10 листов</h3>
+          <p class="de">Ölmalblock · Grobleinen, 230 г/м²</p>
+          <p>Фактура под грубый лён, и она <b>загрунтована</b> — масло её не проест. На обычной бумаге масло со временем разъедает основу, поэтому нужна именно такая.</p>
+          <p>Десять листов — это специально. Чтобы не было страшно испортить: это не дорогой холст, это блокнот для проб.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Первый раз</p>
+        <h2>Как сесть и начать</h2>
+      </div>
+      <ol class="steps">
+        <li>Застели стол — газета, плёнка, что угодно.</li>
+        <li><b>Две банки воды.</b> Одна полоскать кисть, она быстро станет грязной. Вторая чистая — разводить краску.</li>
+        <li>Тряпки. Их надо сильно больше, чем кажется.</li>
+        <li><b>Возьми три цвета, не восемь.</b> Лучше из одной цветовой семьи — пока не привыкла к материалу, так проще держать работу собранной.</li>
+        <li><b>Палитры в наборе нет</b> — подойдёт что угодно гладкое и не впитывающее: керамическая тарелка, кафельная плитка, кусок стекла, плотный файл. Бумагу и картон не бери, они вытянут из краски связующее.</li>
+        <li>Выдави краски по краю: <b>белил побольше</b>, остальных с горошину. Середину оставь под смешивание, а с краю капни лужицу медиума.</li>
+        <li><b>Начинай со светлых участков</b> и постепенно уходи в тёмные. Краска сильно пигментированная, светлое по тёмному перекрывать тяжелее.</li>
+        <li>Начни с той части, которая кажется самой простой. От участка к участку рука расписывается.</li>
+        <li>Работай сеансами по часу. <b>Масло за час не сохнет</b> — можно уйти и вернуться завтра к той же работе. Это его главное преимущество перед акрилом.</li>
+      </ol>
+      <div class="warn"><b>Не размешивай краску кистью</b>, как ложкой — это её убивает. Подойдёт любой ножик, старая пластиковая карта или мастихин. И не оставляй кисть стоять в банке ворсом вниз: волос загнётся навсегда.</div>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Медиум</p>
+        <h2>Malmittel: когда лить и сколько</h2>
+      </div>
+
+      <p class="lede">Это единственная бутылочка в наборе, и из-за неё чаще всего всё портят: льют слишком много и слишком рано. Разберёмся по порядку.</p>
+
+      <div class="items">
+        <article class="item">
+          <h3>Три способа взять краску</h3>
+          <p class="de">так это описывают сами Schmincke</p>
+          <p><b>1. Чистой из тюбика.</b> Самый плотный, корпусный мазок. Держит форму, видно след кисти.</p>
+          <p><b>2. С каплей воды.</b> Жиже и матовее. Так делают первые, подмалёвочные слои.</p>
+          <p><b>3. С медиумом.</b> Текучая и прозрачная, под кистью то самое масляное скольжение — заметно сильнее, чем от воды.</p>
+        </article>
+
+        <article class="item">
+          <h3>Чем медиум отличается от воды</h3>
+          <p>Вода только разжижает. Она испаряется и <b>ничего после себя не оставляет</b> — если ею переборщить, связующего в слое становится мало на объём краски, плёнка выходит слабой и матовой, а тонкий слой потом может пылить и стираться.</p>
+          <p>Медиум разжижает <b>и остаётся в слое</b> как связующее. Поэтому «хочу жиже, но чтобы держалось» — это всегда про медиум, а не про воду.</p>
+        </article>
+      </div>
+
+      <div class="sechead" style="border-bottom-width:1px">
+        <h3>Правило слоёв: жирное поверх тощего</h3>
+      </div>
+      <p>Оно тут единственное, которое реально надо помнить. Чем выше слой, тем больше в нём медиума и тем меньше воды:</p>
+      <ol class="steps">
+        <li><b>Первый слой</b> — краска и вода. Медиума нет совсем или капля. Слой тонкий, матовый, это подмалёвок.</li>
+        <li><b>Второй</b> — краска и медиум, воды уже почти нет.</li>
+        <li><b>Третий и выше</b> — медиума больше, воды нет. Самые жирные и блестящие мазки идут последними.</li>
+      </ol>
+      <div class="warn"><b>Наоборот нельзя.</b> Тощий слой поверх жирного трескается: нижний сохнет дольше и продолжает двигаться, когда верхний уже встал. Трещины вылезут не сразу, а через месяцы — и сделать с ними уже ничего нельзя.</div>
+
+      <div class="sechead" style="border-bottom-width:1px">
+        <h3>Сколько лить</h3>
+      </div>
+      <p>Каплями. Ориентир — <b>не больше четверти от объёма краски</b>, и это практический ориентир, а не цифра с тюбика.</p>
+      <p>Перелила, если мазок стал стеклянным, поплыл, перестал держать след кисти и потёк вниз по листу. Лечится просто: подмешать в эту лужицу ещё краски.</p>
+
+      <div class="sechead" style="border-bottom-width:1px">
+        <h3>Как мешать</h3>
+      </div>
+      <ol class="steps">
+        <li>Капни лужицу медиума <b>с краю палитры, отдельно</b> от красок.</li>
+        <li>Отложи ножом порцию краски на свободное место и добавляй медиум туда. <b>Не в основную кучку</b> — она нужна тебе и чистой тоже.</li>
+        <li>Мешай ножом или мастихином, <b>не кистью</b>.</li>
+        <li>Замешивай ровно столько, сколько кладёшь сейчас. Смесь краски с медиумом не хранится до завтра — она начнёт сохнуть на палитре.</li>
+      </ol>
+
+      <div class="sechead" style="border-bottom-width:1px">
+        <h3>Где он реально пригодится</h3>
+      </div>
+      <div class="items">
+        <article class="item">
+          <h3>Лессировка</h3>
+          <p>Много медиума и совсем чуть краски — получается прозрачный цветной фильтр. Кладётся <b>поверх высохшего слоя</b> и меняет его цвет, не закрывая. Так делают глубокие тени и подцвечивают уже готовое.</p>
+        </article>
+        <article class="item">
+          <h3>Тонкие линии и блики</h3>
+          <p>Краска с каплей медиума <b>лучше стекает с кончика круглой кисти</b>, чем густая из тюбика: линия выходит ровной и не рвётся. Блики ставят последними, по подсохшему.</p>
+        </article>
+        <article class="item">
+          <h3>Когда краска на палитре загустела</h3>
+          <p>За долгий сеанс краска начинает подсыхать и тянуться. <b>Верни её каплей медиума</b>, а не водой — вода сделает её матовой и рыхлой.</p>
+        </article>
+      </div>
+
+      <div class="warn"><b>Что в него не лить.</b> Обычное льняное масло, уайт-спирит, пинен, разбавители для классического масла. Любое из этого — и краска перестанет разводиться и смываться водой, то есть пропадёт весь смысл этой линейки. Разбавитель тут только два: вода и этот медиум.</div>
+      <p class="note">Быстрее сохнуть от медиума не станет. На скорость сушки влияют отдельные добавки — Trocknungsbeschleuniger ускоряет, Trocknungsverzögerer замедляет; в наборе их нет, и для начала они не нужны.</p>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Приёмы</p>
+        <h2>Что стоит попробовать сразу</h2>
+      </div>
+
+      <details>
+        <summary>Как убрать жёсткую границу между цветами</summary>
+        <div class="dbody">
+          <p>Если светлый участок стоит вплотную к тёмному, не пытайся сразу вывести переход. Сначала <b>положи оба цвета плоско</b>, каждый на своём месте, а потом возьми <b>чистую сухую плоскую кисть</b> и растушуй ей стык.</p>
+          <p>Масло это позволяет как раз потому, что долго остаётся сырым — у тебя есть минуты, а не секунды.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Блики и тени — в самом конце</summary>
+        <div class="dbody">
+          <p>Когда основные плоскости готовы и <b>краска уже слегка подсохла</b>, сверху ставятся светлые блики и тёмные акценты. Именно они делают предмет объёмным.</p>
+          <p>Удобнее всего круглой кистью: ей можно и мазнуть плоско, и поставить точку.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Фон — только по сухому</summary>
+        <div class="dbody">
+          <p>Если захочешь добавить цветной фон вокруг мотива, <b>дождись, пока сам мотив высохнет полностью</b>. Иначе кисть с фоном смажет края.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Если будешь работать в несколько слоёв</summary>
+        <div class="dbody">
+          <p>Одно правило, и оно единственное, которое реально надо знать: <b>нижние слои жиже, верхние жирнее.</b> Чем выше слой, тем больше в нём медиума и меньше воды.</p>
+          <p>Наоборот — верхний слой со временем потрескается. Всё, это вся «химия», которая тебе нужна.</p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">После работы</p>
+        <h2>Кисти и сушка</h2>
+      </div>
+
+      <details>
+        <summary>Как мыть кисти</summary>
+        <div class="dbody">
+          <p>Мыть сразу после работы, не откладывая на утро.</p>
+          <ol class="steps">
+            <li>Сними основную краску тряпкой — просто отожми ворс в тряпку.</li>
+            <li>Тёплая вода, <b>не горячая</b>, и мыло. Мыль и крути ворсом по ладони, пока пена не станет чистой.</li>
+            <li>Обрати внимание на <b>основание ворса, у самой обоймы</b> — там краска прячется, и потом кисть дубеет.</li>
+            <li>Отожми, пальцами верни форму.</li>
+          </ol>
+          <div class="warn"><b>Суши горизонтально или ворсом вверх.</b> Никогда ворсом вниз в стакане — вода затечёт в обойму, клей разбухнет и кисть развалится.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Сколько сохнет работа</summary>
+        <div class="dbody">
+          <p>Масло сохнет <b>днями, а не минутами</b>. Тонкий слой становится «на отлип» за пару дней, полностью — за недели.</p>
+          <p>Подумай заранее, где лист будет лежать: горизонтально, там где его никто не заденет и не поставит сверху чашку.</p>
+          <p>Скорость можно менять — у Schmincke есть отдельные средства: <b>ускоритель и замедлитель высыхания</b>. В набор они не входят, но существуют, если захочется.</p>
+          <div class="warn"><b>Не складывай листы друг на друга, пока не высохли.</b> И не суши феном и не ставь на батарею — слой потрескается. Масло должно сохнуть само.</div>
+        </div>
+      </details>
+
+      <details>
+        <summary>Уборка и безопасность</summary>
+        <div class="dbody">
+          <div class="warn"><b>Тряпки не сминай в комок</b> и не бросай так в мусор. Расправь, дай высохнуть, потом выбрасывай. Промасленная ткань в комке может сама разогреться. Вероятность маленькая, но правило бесплатное.</div>
+          <p>Не смывай краску в раковину пачками — сначала счищай остатки на бумагу, потом уже мой.</p>
+          <p>Руки отмываются мылом и водой, перчатки не нужны. Просто не держи кисть во рту.</p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Словарик</p>
+        <h2>Что написано на упаковке</h2>
+      </div>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>По-немецки</th><th>Что значит</th></tr></thead>
+          <tbody>
+            <tr><td class="de">Ölfarbe</td><td>масляная краска</td></tr>
+            <tr><td class="de">wasservermalbar</td><td>водосмешиваемая — разводится и моется водой</td></tr>
+            <tr><td class="de">Malmittel</td><td>медиум, «средство для живописи»</td></tr>
+            <tr><td class="de">Malkasten</td><td>набор в коробке</td></tr>
+            <tr><td class="de">Pinsel</td><td>кисть</td></tr>
+            <tr><td class="de">flach / rund</td><td>плоская / круглая кисть</td></tr>
+            <tr><td class="de">Katzenzunge</td><td>«кошачий язык» — кисть-филберт со скруглённым краем</td></tr>
+                      <tr><td class="de">Ölmalblock</td><td>блок бумаги для масла</td></tr>
+            <tr><td class="de">Grobleinen</td><td>грубый лён — фактура</td></tr>
+            <tr><td class="de">Blatt</td><td>лист</td></tr>
+            <tr><td class="de">Titanweiß</td><td>титановые белила</td></tr>
+            <tr><td class="de">Elfenbeinschwarz</td><td>чёрная «слоновая кость»</td></tr>
+            <tr><td class="de">Ultramarin</td><td>ультрамарин</td></tr>
+            <tr><td class="de">Zitronengelb</td><td>лимонный жёлтый</td></tr>
+            <tr><td class="de">Krapplack</td><td>краплак</td></tr>
+            <tr><td class="de">Umbra gebrannt</td><td>жжёная умбра</td></tr>
+            <tr><td class="de">Siena gebrannt</td><td>жжёная сиена</td></tr>
+            <tr><td class="de">Permanentgrün</td><td>перманентный зелёный</td></tr>
+            <tr><td class="de">Trocknungs&shy;beschleuniger</td><td>ускоритель высыхания</td></tr>
+            <tr><td class="de">Trocknungs&shy;verzögerer</td><td>замедлитель высыхания</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Это слова, которые чаще всего встречаются в стартовых наборах — точный состав смотри прямо на тюбиках.</p>
+    </section>
+
+    <section>
+      <div class="sechead">
+        <p class="eyebrow">Когда закончится</p>
+        <h2>Что докупать и как искать</h2>
+      </div>
+      <p class="lede">В линейке Norma Blue <strong>48 цветов, и все продаются поштучно</strong> — докупать целый набор не нужно. Водосмешиваемое масло делают ещё двое: Royal Talens <strong>Cobra</strong> и Winsor&nbsp;&amp;&nbsp;Newton <strong>Artisan</strong>, они взаимозаменяемы с Norma Blue.</p>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Что</th><th>Когда</th><th>Чем заменить</th></tr></thead>
+          <tbody>
+            <tr><td>Белила</td><td class="when">первыми</td><td>Titanweiß / Titanium White любой из трёх линеек</td></tr>
+            <tr><td>Бумага, 10 листов</td><td class="when">10 работ</td><td>холст на картоне — есть везде и стоит копейки</td></tr>
+                      <tr><td>Медиум, 60 мл</td><td class="when">очень долго</td><td>Cobra Painting Medium или Norma Blue Malmittel</td></tr>
+            <tr><td>Остальные краски</td><td class="when">месяцы</td><td>поштучно, любой из 48 цветов</td></tr>
+            <tr><td>Кисти</td><td class="when">год и больше</td><td>любая синтетика для масла или акрила</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Из полезного, чего в наборе нет: мастихин для смешивания и мыло для кистей. Вместе — меньше десяти евро, есть в любом худмаге.</p>
+    </section>
     </div>
   </section>
 
@@ -1278,32 +1647,52 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   var noteEl  = document.getElementById("pnote");
   var openBtn = null;
 
-  function closePlayer() {
+  // Панель ровно одна: открывая вторую, первую закрываем. Иначе внизу
+  // копится простыня из ролика и всей инструкции разом.
+  function closeAll() {
     if (openBtn) openBtn.setAttribute("aria-expanded", "false");
     openBtn = null;
     playEl.hidden = true;
     frameEl.removeAttribute("src");     // иначе ролик играет в скрытом блоке
     noteEl.textContent = "";
+    var g = document.getElementById("guide");
+    if (g) g.hidden = true;
+  }
+
+  function toggle(btn, fill) {
+    var same = (openBtn === btn);
+    closeAll();
+    if (same) return;                   // повторное нажатие — просто закрыть
+    openBtn = btn;
+    btn.setAttribute("aria-expanded", "true");
+    fill().scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function openPlayer(btn, id, hint) {
-    if (openBtn === btn) { closePlayer(); return; }
-    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
-    openBtn = btn;
-    btn.setAttribute("aria-expanded", "true");
-    frameEl.src = "https://www.youtube-nocookie.com/embed/" + id +
-                  "?cc_load_policy=1&cc_lang_pref=ru&hl=ru&rel=0&autoplay=1";
-    noteEl.textContent = hint || "";
-    playEl.hidden = false;
-    playEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    toggle(btn, function () {
+      frameEl.src = "https://www.youtube-nocookie.com/embed/" + id +
+                    "?cc_load_policy=1&cc_lang_pref=ru&hl=ru&rel=0&autoplay=1";
+      noteEl.textContent = hint || "";
+      playEl.hidden = false;
+      return playEl;
+    });
+  }
+
+  function openPanel(btn, id) {
+    toggle(btn, function () {
+      var el = document.getElementById(id);
+      el.hidden = false;
+      return el;
+    });
   }
 
   (typeof LINKS !== "undefined" ? LINKS : []).forEach(function (e) {
-    var url = (e.url || "").trim();
-    if (!url) return;                   // нечего открывать — нечего и показывать
+    var url   = (e.url || "").trim();
+    var panel = e.opens && document.getElementById(e.opens);
+    if (!url && !panel) return;         // нечего открывать — нечего и показывать
 
-    var id  = ytId(url);
-    var el  = document.createElement(id ? "button" : "a");
+    var id  = url ? ytId(url) : null;
+    var el  = document.createElement((id || panel) ? "button" : "a");
 
     el.className = "lnk";
     el.innerHTML =
@@ -1313,10 +1702,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     el.querySelector("b").textContent = e.title || "";
     el.querySelector("i").textContent = e.note  || "";
 
-    if (id) {
+    if (id || panel) {
       el.type = "button";
       el.setAttribute("aria-expanded", "false");
-      el.addEventListener("click", function () { openPlayer(el, id, e.hint); });
+      el.addEventListener("click", id
+        ? function () { openPlayer(el, id, e.hint); }
+        : function () { openPanel(el, e.opens); });
     } else {
       el.href = url;
       if (/^https?:/i.test(url)) { el.target = "_blank"; el.rel = "noopener"; }
