@@ -25,8 +25,8 @@
     "тебе сегодня 18 лет",
     "Я люблю тебя и по этому",
     { text: "желаю тебе всего самого", cancel: "strike", cancelWord: "самого" },
-    { text: "самого",  scale: 1.25, cancel: "strike" },
-    { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.26 },
+    { text: "самого",  scale: 1.25, cancel: "hatch"  },
+    { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.42 },
     { text: "самого",  scale: 1.9,  cancel: "circle", lift: 0.24 },
     { text: "лучшего", scale: 2.3,  pink: true },
   ];
@@ -517,7 +517,11 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       svg.setAttribute("aria-hidden", "true");
       var path = document.createElementNS(NSU, "path");
       var CANCEL_D = {
-        hatch:  "M3,25 L17,6 L28,25 L43,5 L54,25 L69,7 L80,25 L95,6",
+        // проход слева направо и обратно — так это читается
+        // как зачёрканность, а не как одинокая галочка
+        hatch:  "M3,23 L13,6 L23,24 L33,5 L43,24 L53,6 L63,24 L73,5 " +
+                "L83,24 L93,7 L97,16 L88,27 L78,9 L68,27 L58,8 " +
+                "L48,27 L38,9 L28,27 L18,8 L8,26 L3,17",
         strike: "M2,19 C22,12 44,20 62,14 C78,10 90,17 98,12",
         // обводка с перехлёстом, как обводят от руки
         circle: "M4,15 C4,5 26,1 50,1 C76,1 97,6 97,15 C97,25 74,29 48,29 " +
