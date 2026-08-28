@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>С днём рождения</title>
 <meta name="description" content="Открытка и подарок — набор для масляной живописи.">
+<meta name="theme-color" content="#2E0E1D">
 
 <script>
   /* ============================================================
@@ -23,43 +24,40 @@
   const MY_VIDEO = {
     url:   "",             // ссылка на ТВОЁ видео. Пусто — блок не покажется
     title: "Что это и как этим пользоваться",
-    note:  "Разбираю набор по предметам и показываю первый сеанс.",
   };
 
-  /* Видео Schmincke вшито в разметку ниже, субтитры включаются сами.
-     Трогать не нужно. */
+  /* Видео Schmincke вшито в разметку ниже, субтитры включаются сами. */
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 
 <style>
+/* ===== палитра: краплак и розовая марена ===== */
 :root{
-  --bg:#EFF0F4; --surface:#FFF; --surface-2:#F6F7FB;
-  --ink:#171A22; --ink-2:#565D70; --ink-3:#868CA1;
-  --rule:#D8DBE4; --rule-soft:#E6E8EF;
-  --accent:#2A3E8C; --accent-ink:#2A3E8C; --accent-soft:#E3E7F6;
-  --warm:#B8503A; --warm-soft:#F6E7E2;
-  --shadow:0 1px 2px rgba(23,26,34,.05), 0 8px 24px -12px rgba(23,26,34,.18);
+  --bg:#FBF1F2; --surface:#FFF; --surface-2:#FCF5F7;
+  --ink:#2A1119; --ink-2:#6E4B56; --ink-3:#9C7B85;
+  --rule:#E8D2D8; --rule-soft:#F2E3E7;
+  --accent:#B03357; --accent-ink:#9C2A4C; --accent-soft:#FAE3E9;
+  --deep:#2E0E1D;
+  --shadow:0 1px 2px rgba(42,17,25,.05), 0 10px 28px -14px rgba(42,17,25,.22);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#13151B; --surface:#1B1E26; --surface-2:#212530;
-    --ink:#E9EBF2; --ink-2:#9BA2B5; --ink-3:#6E7488;
-    --rule:#2D313D; --rule-soft:#242833;
-    --accent:#8AA0EE; --accent-ink:#A9B9F5; --accent-soft:#232B47;
-    --warm:#E08A6E; --warm-soft:#33231D;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --bg:#170A10; --surface:#211018; --surface-2:#2A1520;
+    --ink:#F5E6EA; --ink-2:#C4A0AC; --ink-3:#8E6C78;
+    --rule:#3A2029; --rule-soft:#2C1720;
+    --accent:#E8869F; --accent-ink:#F0A0B4; --accent-soft:#331823;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -14px rgba(0,0,0,.7);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#13151B; --surface:#1B1E26; --surface-2:#212530;
-  --ink:#E9EBF2; --ink-2:#9BA2B5; --ink-3:#6E7488;
-  --rule:#2D313D; --rule-soft:#242833;
-  --accent:#8AA0EE; --accent-ink:#A9B9F5; --accent-soft:#232B47;
-  --warm:#E08A6E; --warm-soft:#33231D;
-  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --bg:#170A10; --surface:#211018; --surface-2:#2A1520;
+  --ink:#F5E6EA; --ink-2:#C4A0AC; --ink-3:#8E6C78;
+  --rule:#3A2029; --rule-soft:#2C1720;
+  --accent:#E8869F; --accent-ink:#F0A0B4; --accent-soft:#331823;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 28px -14px rgba(0,0,0,.7);
 }
 
 *{box-sizing:border-box}
@@ -68,123 +66,130 @@ body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:'Golos Text','Segoe UI',system-ui,sans-serif;
   font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
 }
-h1,h2,h3{font-family:'Bitter',Georgia,serif;text-wrap:balance;margin:0}
 p{margin:0}
 a{color:var(--accent-ink)}
 a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 
-/* ================= HERO — единый вид в обеих темах ================= */
+/* ===== мазок-полоса вдоль левого края ===== */
+.rail{
+  position:fixed; left:0; top:0; z-index:40;
+  width:clamp(9px,2.2vw,15px); height:100vh; height:100svh;
+  pointer-events:none;
+}
+.rail svg{display:block;width:100%;height:100%}
+
+/* ===== первый экран ===== */
 .hero{
-  position:relative; overflow:hidden;
-  min-height:min(100svh,760px);
+  position:relative; overflow:hidden; isolation:isolate;
+  min-height:100svh;
   display:flex; flex-direction:column; justify-content:flex-end;
-  padding:clamp(28px,7vw,64px);
-  background:#0E1030;
-  isolation:isolate;
+  padding:clamp(30px,7vw,64px);
+  padding-left:calc(clamp(30px,7vw,64px) + clamp(9px,2.2vw,15px));
+  background:var(--deep);
 }
-.hero canvas{
-  position:absolute; inset:0; width:100%; height:100%;
-  z-index:-2; display:block;
-}
-.hero::after{ /* затемнение снизу, чтобы текст читался поверх любого мазка */
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-3;display:block}
+.hero::after{
   content:""; position:absolute; inset:0; z-index:-1;
-  background:linear-gradient(180deg,rgba(14,16,48,.15) 0%,rgba(14,16,48,.55) 55%,rgba(14,16,48,.9) 100%);
+  background:linear-gradient(180deg,rgba(46,14,29,.05) 0%,rgba(46,14,29,.42) 52%,rgba(46,14,29,.93) 100%);
 }
-.hero-inner{display:flex;flex-direction:column;gap:clamp(14px,3vw,20px);max-width:20ch}
+.heartwrap{
+  position:absolute; z-index:-2;
+  left:50%; top:clamp(60px,13vh,130px); transform:translateX(-50%);
+  width:min(66vw,300px); aspect-ratio:1;
+}
+.heartwrap svg{width:100%;height:100%;overflow:visible}
+
+.hero-inner{display:flex;flex-direction:column;gap:clamp(13px,3vw,18px);max-width:22ch}
 .hero .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
-  color:rgba(255,255,255,.72);
+  font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(255,225,232,.7);
 }
 .hero h1{
-  font-size:clamp(44px,13vw,88px); font-weight:700; line-height:.98;
-  letter-spacing:-.025em; color:#FFF;
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(46px,14vw,92px); font-weight:500; line-height:.94;
+  letter-spacing:-.01em; color:#FFF4F6; margin:0; text-wrap:balance;
 }
 .hero .sub{
-  font-size:clamp(16px,3.6vw,18px); color:rgba(255,255,255,.78);
-  max-width:34ch; line-height:1.5;
+  font-size:clamp(15.5px,3.6vw,17.5px); color:rgba(255,228,235,.8);
+  max-width:32ch; line-height:1.5;
 }
 .scrollhint{
-  display:flex;align-items:center;gap:9px;margin-top:clamp(10px,3vw,18px);
+  display:flex;align-items:center;gap:9px;margin-top:clamp(8px,2.5vw,16px);
   font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(255,255,255,.55);
+  font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,225,232,.5);
 }
-.scrollhint span:first-child{
-  width:22px;height:22px;border:1px solid rgba(255,255,255,.35);
-  border-radius:50%;display:grid;place-items:center;font-size:10px;
+.scrollhint i{
+  width:22px;height:22px;border:1px solid rgba(255,225,232,.3);
+  border-radius:50%;display:grid;place-items:center;font-size:10px;font-style:normal;
   animation:bob 2.4s ease-in-out infinite;
 }
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
 
-/* ================= общая обёртка ================= */
+/* ===== общая колонка ===== */
 .wrap{
-  max-width:660px; margin:0 auto;
-  padding:clamp(40px,9vw,72px) clamp(18px,5vw,32px) 80px;
-  display:flex; flex-direction:column; gap:clamp(36px,7vw,60px);
+  max-width:640px; margin:0 auto;
+  padding:clamp(44px,10vw,80px) clamp(20px,5vw,32px) 80px;
+  padding-left:max(clamp(20px,5vw,32px),clamp(22px,5vw,34px));
+  display:flex; flex-direction:column; gap:clamp(38px,7vw,62px);
 }
 
-/* ================= письмо ================= */
-.letter{display:flex;flex-direction:column;gap:20px}
+/* ===== письмо ===== */
+.letter{display:flex;flex-direction:column;gap:18px}
 .letter p{
-  font-family:'Bitter',Georgia,serif;
-  font-size:clamp(18px,4.2vw,21px); line-height:1.62; color:var(--ink);
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(21px,5vw,26px); line-height:1.5; color:var(--ink);
+  font-weight:400;
 }
-.letter .sign{
-  font-family:'Golos Text',sans-serif;
-  font-size:15px; color:var(--ink-3); margin-top:6px;
+.signrow{display:flex;align-items:center;gap:11px;margin-top:8px}
+.signrow .mini{width:19px;height:19px;flex:0 0 auto;color:var(--accent)}
+.signrow p{
+  font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
+  font-size:clamp(18px,4vw,21px);color:var(--ink-2);
 }
-.letter.placeholder{
-  border:1px dashed var(--rule); border-radius:4px;
-  padding:clamp(20px,5vw,28px); gap:12px;
-}
+.letter.placeholder{border:1px dashed var(--rule);border-radius:5px;padding:clamp(20px,5vw,28px);gap:11px}
 .letter.placeholder p{
   font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:13.5px; line-height:1.6; color:var(--ink-3);
+  font-size:13px;line-height:1.6;color:var(--ink-3);
 }
-.letter.placeholder code{
-  font-size:12.5px; background:var(--accent-soft); color:var(--accent-ink);
-  padding:2px 6px; border-radius:2px;
-}
+.letter.placeholder code{font-size:12.5px;background:var(--accent-soft);color:var(--accent-ink);padding:2px 6px;border-radius:2px}
 
-/* ================= видео ================= */
-.vsec{display:flex;flex-direction:column;gap:18px}
-.sechead{display:flex;flex-direction:column;gap:6px;padding-bottom:11px;border-bottom:2px solid var(--ink)}
+/* ===== секции ===== */
+.vsec,.guide{display:flex;flex-direction:column;gap:17px}
+.sechead{display:flex;flex-direction:column;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
 .sechead .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
   color:var(--accent-ink);
 }
-.sechead h2{font-size:clamp(21px,4.6vw,26px);font-weight:700;line-height:1.18;letter-spacing:-.01em}
+.sechead h2{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(26px,6vw,34px);font-weight:500;line-height:1.1;margin:0;
+}
 
 .vcard{
-  background:var(--surface); border:1px solid var(--rule); border-radius:4px;
-  overflow:hidden; box-shadow:var(--shadow);
-  display:flex; flex-direction:column;
+  background:var(--surface);border:1px solid var(--rule);border-radius:5px;
+  overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;
 }
 .vframe{position:relative;width:100%;aspect-ratio:16/9;background:#000}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .vmeta{padding:16px 18px;display:flex;flex-direction:column;gap:6px}
-.vmeta h3{font-size:16.5px;font-weight:600;line-height:1.3}
+.vmeta h3{font-family:'Golos Text',sans-serif;font-size:16px;font-weight:600;line-height:1.3;margin:0}
 .vmeta p{font-size:14.5px;color:var(--ink-2);line-height:1.5}
-.vmeta .src{
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11px;color:var(--ink-3);letter-spacing:.04em;
-}
+.vmeta .src{font-family:'IBM Plex Mono','Consolas',monospace;font-size:11px;color:var(--ink-3)}
 .subnote{
-  background:var(--warm-soft); border-left:2px solid var(--warm);
-  padding:12px 15px; border-radius:0 3px 3px 0;
-  font-size:14px; line-height:1.5; color:var(--ink-2);
+  background:var(--accent-soft);border-left:2px solid var(--accent);
+  padding:12px 15px;border-radius:0 3px 3px 0;font-size:14px;line-height:1.5;color:var(--ink-2);
 }
 .subnote b{color:var(--ink);font-weight:600}
 
 .vlink{
-  display:flex;align-items:center;gap:13px;
-  padding:16px 18px;border-radius:4px;
-  background:var(--accent-soft);color:var(--ink);
-  text-decoration:none;font-weight:500;font-size:15.5px;line-height:1.35;
-  border:1px solid var(--rule);
+  display:flex;align-items:center;gap:13px;padding:16px 18px;border-radius:5px;
+  background:var(--accent-soft);color:var(--ink);text-decoration:none;
+  font-weight:500;font-size:15.5px;line-height:1.35;border:1px solid var(--rule);
 }
 .vlink:hover{background:var(--accent);color:#FFF;border-color:transparent}
 .vlink .play{
@@ -192,31 +197,24 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   background:var(--accent);color:#FFF;display:grid;place-items:center;font-size:10px;
 }
 .vlink:hover .play{background:#FFF;color:var(--accent)}
-.pending{
-  border:1px dashed var(--rule); border-radius:4px;
-  padding:18px; font-size:14.5px; color:var(--ink-3); line-height:1.5;
-}
+.pending{border:1px dashed var(--rule);border-radius:5px;padding:18px;font-size:14.5px;color:var(--ink-3);line-height:1.5}
 
-/* ================= ссылка на инструкцию ================= */
-.guide{
-  display:flex;flex-direction:column;gap:14px;
-  background:var(--surface-2); border:1px solid var(--rule);
-  border-radius:4px; padding:clamp(20px,5vw,28px);
-}
-.guide h2{font-size:clamp(19px,4.2vw,23px);font-weight:700;line-height:1.2}
+.guide{background:var(--surface-2);border:1px solid var(--rule);border-radius:5px;padding:clamp(20px,5vw,28px);gap:13px}
+.guide h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(23px,5vw,29px);font-weight:500;line-height:1.15;margin:0}
 .guide p{font-size:15px;color:var(--ink-2);line-height:1.55}
 .guide a.btn{
-  align-self:flex-start;
-  display:inline-flex;align-items:center;gap:9px;
+  align-self:flex-start;display:inline-flex;align-items:center;gap:9px;
   background:var(--accent);color:#FFF;text-decoration:none;
   padding:12px 20px;border-radius:3px;font-weight:600;font-size:15px;
 }
 .guide a.btn:hover{opacity:.88}
 
 .foot{
-  border-top:1px solid var(--rule); padding-top:22px;
-  font-size:13.5px; color:var(--ink-3); line-height:1.55;
+  border-top:1px solid var(--rule);padding-top:22px;
+  display:flex;align-items:center;gap:10px;
+  font-size:13.5px;color:var(--ink-3);line-height:1.55;
 }
+.foot .mini{width:15px;height:15px;flex:0 0 auto;color:var(--accent);opacity:.65}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
@@ -225,13 +223,53 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 </head>
 <body>
 
+<!-- мазок вдоль левого края -->
+<div class="rail" aria-hidden="true">
+  <svg viewBox="0 0 20 100" preserveAspectRatio="none">
+    <defs>
+      <filter id="rail-brush" x="-50%" y="-10%" width="200%" height="120%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.9 0.04" numOctaves="2" seed="11" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <clipPath id="rail-clip"><rect id="rail-rect" x="0" y="0" width="20" height="0"/></clipPath>
+    </defs>
+    <g clip-path="url(#rail-clip)" filter="url(#rail-brush)">
+      <path d="M5.5,0 C7.2,14 4.4,27 6.1,41 C7.8,55 4.8,68 6.4,82 C7.4,90 5.8,95 6.2,100 L13.4,100 C13.9,94 12.3,88 13.2,79 C14.1,66 11.6,54 13.1,40 C14.6,26 11.9,13 13.6,0 Z" fill="var(--accent)"/>
+      <path d="M8.2,0 C9.4,20 7.6,44 8.8,66 C9.5,80 8.4,90 8.9,100" stroke="rgba(255,255,255,.22)" stroke-width=".7" fill="none"/>
+      <path d="M11.4,0 C10.6,24 12.2,48 11.2,72 C10.7,86 11.6,93 11.1,100" stroke="rgba(255,255,255,.14)" stroke-width=".5" fill="none"/>
+    </g>
+  </svg>
+</div>
+
 <header class="hero">
   <canvas id="wash" aria-hidden="true"></canvas>
+
+  <div class="heartwrap" aria-hidden="true">
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <filter id="heart-brush" x="-25%" y="-25%" width="150%" height="150%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="4" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+      <g filter="url(#heart-brush)">
+        <path id="heart-main"
+          d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
+          fill="none" stroke="#E0567E" stroke-width="13"
+          stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+        <path id="heart-hi"
+          d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
+          fill="none" stroke="#FFC2D2" stroke-width="3.4"
+          stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+      </g>
+    </svg>
+  </div>
+
   <div class="hero-inner">
     <p class="eyebrow">Открытка</p>
     <h1 id="hero-title">С днём рождения</h1>
-    <p class="sub" id="hero-sub">Ты говорила, что хочешь попробовать масло. Держи.</p>
-    <div class="scrollhint"><span aria-hidden="true">&#8595;</span><span>Листай</span></div>
+    <p class="sub">Ты говорила, что хочешь попробовать масло. Держи.</p>
+    <div class="scrollhint"><i aria-hidden="true">&#8595;</i><span>Листай</span></div>
   </div>
 </header>
 
@@ -250,7 +288,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       <div class="vframe">
         <iframe
           src="https://www.youtube-nocookie.com/embed/H7e5FrgiM6M?cc_load_policy=1&amp;cc_lang_pref=ru&amp;hl=ru&amp;rel=0"
-          title="NORMA Blue: Malen mit wasservermalbarer Ölfarbe — Schmincke"
+          title="NORMA Blue — Schmincke Künstlerfarben"
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           referrerpolicy="strict-origin-when-cross-origin"
           allowfullscreen loading="lazy"></iframe>
@@ -258,29 +296,33 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       <div class="vmeta">
         <h3>Как работать с этой краской — от самих производителей</h3>
         <p class="src">Schmincke Künstlerfarben · 4:42 · на немецком</p>
-        <p>Художница показывает весь процесс от карандашного наброска до бликов: как ограничиться тремя цветами, почему начинать со светлого и как растушёвывать границы.</p>
+        <p>Художница показывает весь процесс: как ограничиться тремя цветами, почему начинать со светлого и как растушёвывать границы.</p>
       </div>
     </div>
     <div class="subnote">
-      <b>Русские субтитры включаются сами.</b> Если вдруг не включились — иконка ⚙ в плеере, «Субтитры» → «Перевести» → «Русский». Перевод идёт с живого немецкого текста, а не с распознавания, поэтому читается нормально.
+      <b>Русские субтитры включаются сами.</b> Если вдруг нет — шестерёнка в плеере, «Субтитры» → «Перевести» → «Русский».
     </div>
   </section>
 
   <section class="guide">
     <h2>Вся практика — отдельно</h2>
-    <p>Что за чем идёт, как мыть кисти, сколько сохнет, что написано на немецких тюбиках и что докупать, когда закончится. Чтобы не искать по интернету.</p>
+    <p>Что за чем идёт, как мыть кисти, сколько сохнет, что написано на немецких тюбиках и что докупать, когда закончится.</p>
     <a class="btn" href="guide/">Открыть инструкцию &#8594;</a>
   </section>
 
   <footer class="foot">
-    Набор собран в Германии — такие краски здесь найти проще.
+    <svg class="mini" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z" fill="currentColor"/></svg>
+    <span>Набор собран в Германии — такие краски здесь найти проще.</span>
   </footer>
 
 </div>
 
 <script>
 (function () {
-  /* ---------- письмо ---------- */
+  var reduce = window.matchMedia &&
+               window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------- письмо ---------------- */
   var L = document.getElementById("letter");
   var paras = (GREETING.text || []).filter(function (s) { return s && s.trim(); });
 
@@ -289,6 +331,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       "С днём рождения, " + GREETING.to.trim();
   }
 
+  var HEART_D = "M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z";
+
   if (paras.length) {
     paras.forEach(function (t) {
       var p = document.createElement("p");
@@ -296,39 +340,47 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       L.appendChild(p);
     });
     if (GREETING.sign && GREETING.sign.trim()) {
+      var row = document.createElement("div");
+      row.className = "signrow";
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "mini");
+      svg.setAttribute("viewBox", "0 0 100 100");
+      svg.setAttribute("aria-hidden", "true");
+      var pth = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      pth.setAttribute("d", HEART_D);
+      pth.setAttribute("fill", "currentColor");
+      svg.appendChild(pth);
       var s = document.createElement("p");
-      s.className = "sign";
       s.textContent = GREETING.sign.trim();
-      L.appendChild(s);
+      row.appendChild(svg); row.appendChild(s);
+      L.appendChild(row);
     }
   } else {
     L.className = "letter placeholder";
-    var a = document.createElement("p");
-    a.textContent = "Здесь будет поздравление. Открой index.html, найди блок GREETING в самом верху и заполни:";
-    var b = document.createElement("p");
-    b.innerHTML = "<code>to</code> — её имя · <code>text</code> — абзацы · <code>sign</code> — подпись";
-    var c = document.createElement("p");
-    c.textContent = "Пока пусто — этот блок видит только тот, кто откроет страницу. Не забудь.";
-    L.appendChild(a); L.appendChild(b); L.appendChild(c);
+    [["Здесь будет поздравление. Открой index.html, найди блок GREETING в самом верху и заполни:", 0],
+     ["<code>to</code> — её имя · <code>text</code> — абзацы · <code>sign</code> — подпись", 1],
+     ["Пока пусто — этот блок видит любой, кто откроет страницу. Не забудь.", 0]
+    ].forEach(function (row) {
+      var p = document.createElement("p");
+      if (row[1]) { p.innerHTML = row[0]; } else { p.textContent = row[0]; }
+      L.appendChild(p);
+    });
   }
 
-  /* ---------- моё видео ---------- */
+  /* ---------------- моё видео ---------------- */
   var M = document.getElementById("myvideo");
   if (MY_VIDEO.url && MY_VIDEO.url.trim()) {
-    var link = document.createElement("a");
-    link.className = "vlink";
-    link.href = MY_VIDEO.url.trim();
-    link.target = "_blank";
-    link.rel = "noopener";
-    var icon = document.createElement("span");
-    icon.className = "play";
-    icon.setAttribute("aria-hidden", "true");
-    icon.innerHTML = "&#9654;";
-    var label = document.createElement("span");
-    label.textContent = MY_VIDEO.title || "Смотреть";
-    link.appendChild(icon);
-    link.appendChild(label);
-    M.appendChild(link);
+    var a = document.createElement("a");
+    a.className = "vlink";
+    a.href = MY_VIDEO.url.trim();
+    a.target = "_blank"; a.rel = "noopener";
+    var ic = document.createElement("span");
+    ic.className = "play"; ic.setAttribute("aria-hidden", "true");
+    ic.innerHTML = "&#9654;";
+    var lb = document.createElement("span");
+    lb.textContent = MY_VIDEO.title || "Смотреть";
+    a.appendChild(ic); a.appendChild(lb);
+    M.appendChild(a);
   } else {
     var d = document.createElement("div");
     d.className = "pending";
@@ -336,67 +388,130 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     M.appendChild(d);
   }
 
-  /* ---------- живописный фон ----------
-     Мягкие пятна в духе размытого масляного мазка.
-     Рисуется один раз, без анимации: это фон, а не аттракцион. */
+  /* ---------------- живописный фон ---------------- */
   var cv = document.getElementById("wash");
-  if (!cv || !cv.getContext) return;
-  var ctx = cv.getContext("2d");
-
-  function paint() {
+  function paintWash() {
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext("2d");
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return;
     cv.width = w * dpr; cv.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    ctx.fillStyle = "#0E1030";
+    ctx.fillStyle = "#2E0E1D";
     ctx.fillRect(0, 0, w, h);
 
-    // палитра набора: ультрамарин, краплак, умбра, немного белил
-    var blobs = [
-      { x:.18, y:.22, r:.62, c:"42,62,140" },
-      { x:.82, y:.14, r:.55, c:"92,58,120" },
-      { x:.68, y:.62, r:.70, c:"170,72,58" },
-      { x:.12, y:.78, r:.58, c:"38,44,96" },
-      { x:.48, y:.40, r:.45, c:"228,210,196" },
-    ];
-    var base = Math.max(w, h);
-    blobs.forEach(function (b) {
-      var g = ctx.createRadialGradient(
-        b.x * w, b.y * h, 0,
-        b.x * w, b.y * h, b.r * base
-      );
-      g.addColorStop(0, "rgba(" + b.c + ",.55)");
-      g.addColorStop(.45, "rgba(" + b.c + ",.20)");
-      g.addColorStop(1, "rgba(" + b.c + ",0)");
+    // краплак, марена, слива, немного белил
+    [{x:.20,y:.20,r:.62,c:"142,37,71"},
+     {x:.84,y:.12,r:.54,c:"104,40,86"},
+     {x:.70,y:.60,r:.72,c:"196,64,102"},
+     {x:.10,y:.76,r:.58,c:"78,20,44"},
+     {x:.46,y:.34,r:.42,c:"243,201,212"}
+    ].forEach(function (b) {
+      var base = Math.max(w, h);
+      var g = ctx.createRadialGradient(b.x*w, b.y*h, 0, b.x*w, b.y*h, b.r*base);
+      g.addColorStop(0,   "rgba(" + b.c + ",.50)");
+      g.addColorStop(.45, "rgba(" + b.c + ",.18)");
+      g.addColorStop(1,   "rgba(" + b.c + ",0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
     });
 
-    // Лёгкое зерно, чтобы градиенты не полосили.
-    // Генерим маленький тайл и размножаем узором — так быстрее,
-    // чем считать шум на весь холст.
     var gc = document.createElement("canvas");
     gc.width = gc.height = 128;
     var gx = gc.getContext("2d");
-    var n = gx.createImageData(128, 128), d = n.data;
-    for (var i = 0; i < d.length; i += 4) {
+    var n = gx.createImageData(128, 128), da = n.data;
+    for (var i = 0; i < da.length; i += 4) {
       var v = (Math.random() * 255) | 0;
-      d[i] = d[i + 1] = d[i + 2] = v;
-      d[i + 3] = 255;
+      da[i] = da[i+1] = da[i+2] = v; da[i+3] = 255;
     }
     gx.putImageData(n, 0, 0);
-    ctx.globalAlpha = .04;
+    ctx.globalAlpha = .045;
     ctx.fillStyle = ctx.createPattern(gc, "repeat");
     ctx.fillRect(0, 0, w, h);
     ctx.globalAlpha = 1;
   }
 
-  paint();
-  var t;
-  window.addEventListener("resize", function () {
-    clearTimeout(t); t = setTimeout(paint, 200);
-  });
+  /* ---------------- сердце и полоса по скроллу ---------------- */
+  var main = document.getElementById("heart-main");
+  var hi   = document.getElementById("heart-hi");
+  var rect = document.getElementById("rail-rect");
+  var hero = document.querySelector(".hero");
+  var len  = 0;
+
+  function setup() {
+    if (!main) return;
+    len = main.getTotalLength();
+    [main, hi].forEach(function (p) {
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+  }
+
+  // 0 -> 1: сколько сердца прорисовано
+  var intro = 0;          // стартовая подрисовка при загрузке
+  function heartAt(t) {
+    if (!main || !len) return;
+    var off = len * (1 - Math.max(0, Math.min(1, t)));
+    main.style.strokeDashoffset = off;
+    hi.style.strokeDashoffset = off;
+  }
+
+  function onScroll() {
+    var docH = document.documentElement.scrollHeight - window.innerHeight;
+    var railT = docH > 0 ? window.scrollY / docH : 0;
+    if (rect) rect.setAttribute("height", (Math.max(0, Math.min(1, railT)) * 100).toFixed(2));
+
+    var heroH = hero ? hero.offsetHeight : window.innerHeight;
+    var span = heroH * .85;
+    var heroT = span > 0 ? window.scrollY / span : 0;
+    heartAt(intro + (1 - intro) * Math.max(0, Math.min(1, heroT)));
+  }
+
+  function boot() {
+    setup();
+    paintWash();
+
+    if (reduce) {
+      intro = 1;
+      heartAt(1);
+      if (rect) rect.setAttribute("height", 100);
+      return;
+    }
+
+    heartAt(0);
+    // сердце начинает рисоваться само, чтобы экран не выглядел пустым
+    var t0 = null, DUR = 1500, TARGET = .34;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var k = Math.min(1, (ts - t0) / DUR);
+      var eased = 1 - Math.pow(1 - k, 3);
+      intro = TARGET * eased;
+      if (window.scrollY < 4) heartAt(intro);
+      if (k < 1) requestAnimationFrame(step); else onScroll();
+    }
+    requestAnimationFrame(step);
+
+    var ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { onScroll(); ticking = false; });
+    }, { passive: true });
+
+    var rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { paintWash(); onScroll(); }, 200);
+    });
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(boot);
+  } else {
+    boot();
+  }
 })();
 </script>
 </body>
