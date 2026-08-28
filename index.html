@@ -91,17 +91,23 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 }
 .hero canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-3;display:block}
 .hero::after{
-  content:""; position:absolute; inset:0; z-index:-1;
+  content:""; position:absolute; inset:0; z-index:-2;
   background:linear-gradient(180deg,rgba(46,14,29,.05) 0%,rgba(46,14,29,.42) 52%,rgba(46,14,29,.93) 100%);
 }
+/* Сердце висит неподвижно, пока идёт первый экран: так она видит,
+   как мазок замыкается, а не как он уезжает наверх недорисованным. */
 .heartwrap{
-  position:absolute; z-index:-2;
-  left:50%; top:clamp(60px,13vh,130px); transform:translateX(-50%);
+  position:fixed; z-index:-1;
+  left:50%; top:clamp(56px,12vh,120px); transform:translateX(-50%);
   width:min(66vw,300px); aspect-ratio:1;
+  will-change:opacity; pointer-events:none;
 }
 .heartwrap svg{width:100%;height:100%;overflow:visible}
 
-.hero-inner{display:flex;flex-direction:column;gap:clamp(13px,3vw,18px);max-width:22ch}
+.hero-inner{
+  position:relative; z-index:1;
+  display:flex;flex-direction:column;gap:clamp(13px,3vw,18px);max-width:22ch;
+}
 .hero .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
   font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
@@ -434,11 +440,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   }
 
   /* ---------------- сердце и полоса по скроллу ---------------- */
-  var main = document.getElementById("heart-main");
-  var hi   = document.getElementById("heart-hi");
-  var rect = document.getElementById("rail-rect");
-  var hero = document.querySelector(".hero");
-  var len  = 0;
+  var main   = document.getElementById("heart-main");
+  var hi     = document.getElementById("heart-hi");
+  var rect   = document.getElementById("rail-rect");
+  var hero   = document.querySelector(".hero");
+  var wrapEl = document.querySelector(".heartwrap");
+  var len    = 0;
 
   function setup() {
     if (!main) return;
@@ -458,17 +465,28 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     hi.style.strokeDashoffset = off;
   }
 
+  function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
   function onScroll() {
+    var y = window.scrollY;
+
+    // полоса слева = прогресс по всей странице
     var docH = document.documentElement.scrollHeight - window.innerHeight;
-    var railT = docH > 0 ? window.scrollY / docH : 0;
-    if (rect) rect.setAttribute("height", (Math.max(0, Math.min(1, railT)) * 100).toFixed(2));
+    if (rect) rect.setAttribute("height", (clamp01(docH > 0 ? y / docH : 0) * 100).toFixed(2));
 
     var heroH = hero ? hero.offsetHeight : window.innerHeight;
-    // Сердце должно замкнуться, ПОКА оно ещё в кадре: оно висит в верхней
-    // трети первого экрана и уезжает вверх примерно к 45% прокрутки героя.
-    var span = heroH * .25;
-    var heroT = span > 0 ? window.scrollY / span : 0;
-    heartAt(intro + (1 - intro) * Math.max(0, Math.min(1, heroT)));
+
+    // сердце дорисовывается за первые 30% первого экрана
+    var span = heroH * .30;
+    heartAt(intro + (1 - intro) * clamp01(span > 0 ? y / span : 0));
+
+    // и растворяется, пока подъезжает письмо, чтобы не висеть над текстом
+    if (wrapEl) {
+      var a = heroH * .45, b = heroH * .72;
+      var f = 1 - clamp01((y - a) / (b - a));
+      wrapEl.style.opacity = f;
+      wrapEl.style.visibility = f <= .01 ? "hidden" : "visible";
+    }
   }
 
   function boot() {
@@ -476,9 +494,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     paintWash();
 
     if (reduce) {
+      // Без анимации: сердце сразу целое. Но тогда некому его убрать со
+      // скроллом, поэтому возвращаем в поток — уедет вместе с первым экраном.
       intro = 1;
       heartAt(1);
       if (rect) rect.setAttribute("height", 100);
+      if (wrapEl) { wrapEl.style.position = "absolute"; wrapEl.style.top = "12vh"; }
       return;
     }
 
