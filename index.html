@@ -464,7 +464,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     if (rect) rect.setAttribute("height", (Math.max(0, Math.min(1, railT)) * 100).toFixed(2));
 
     var heroH = hero ? hero.offsetHeight : window.innerHeight;
-    var span = heroH * .85;
+    // Сердце должно замкнуться, ПОКА оно ещё в кадре: оно висит в верхней
+    // трети первого экрана и уезжает вверх примерно к 45% прокрутки героя.
+    var span = heroH * .25;
     var heroT = span > 0 ? window.scrollY / span : 0;
     heartAt(intro + (1 - intro) * Math.max(0, Math.min(1, heroT)));
   }
