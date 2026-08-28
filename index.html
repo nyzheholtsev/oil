@@ -129,10 +129,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    .stage — высокая пустая сцена, она и задаёт длину прокрутки.
    .pin   — то, что видно: липнет к верху и стоит на месте, пока сцена
             проезжает мимо. Именно в это время идёт вся анимация.
-   Дольше/короче — меняй только height у .stage.                      */
+   Дольше/короче — меняй только height у .stage. Считай по ходу
+   прокрутки, а не по высоте: работает (height - 100vh), первые
+   100vh забирает сам залипший экран. Сейчас ход 1680vh.            */
 .stage{
   position:relative;
-  height:660vh; height:660svh;
+  height:1780vh; height:1780svh;
   background:var(--deep);
 }
 .pin{
