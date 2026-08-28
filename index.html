@@ -12,13 +12,18 @@
      ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай.
      ============================================================ */
 
-  // Строки, которые пишутся по очереди на первом экране.
-  // Меняй как хочешь — тайминг поделится между ними сам.
+  // Сердце в последовательности — ставь HEART там, где оно должно рисоваться.
+  const HEART = "♥";
+
+  // Что пишется по очереди на первом экране.
+  // Добавляй и убирай строки свободно — тайминг поделится сам.
   const PHRASE = [
-    "Я",
-    "поздравляю",
-    "тебя моя",
-    "любовь",
+    "Моя Света",
+    "Я поздравляю тебя",
+    "Тебе сегодня 18 лет",
+    "Я люблю тебя",
+    HEART,
+    "желаю всего самого лучшего",
   ];
 
   const GREETING = {
@@ -117,18 +122,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   background:linear-gradient(180deg,rgba(46,14,29,.10) 0%,rgba(46,14,29,.30) 55%,rgba(46,14,29,.88) 100%);
 }
 
-/* --- сердце: рисуется последним, за текстом --- */
-.heartwrap{
-  position:absolute; inset:0; z-index:-1;
-  display:grid; place-items:center;
-  pointer-events:none; opacity:0;
-}
-.heartwrap svg{
-  width:min(86vw,380px); aspect-ratio:1; height:auto;
-  overflow:visible; opacity:.5;
-  transform:translateY(-11%);
-}
-
 /* --- подсказка «листай» в самом начале --- */
 .hint{
   position:absolute; inset:0; z-index:2;
@@ -153,14 +146,13 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   position:absolute; inset:0; z-index:1;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  padding:0 7vw clamp(90px,20vh,190px);
-  pointer-events:none; text-align:center;
+  padding:0 6vw; pointer-events:none; text-align:center;
 }
 .pline{
   font-family:'Caveat','Segoe Script',cursive;
   font-weight:600;
-  font-size:clamp(38px,11.5vw,72px);
-  line-height:1.06;
+  font-size:clamp(28px,8vw,52px);
+  line-height:1.1;
   color:#FFEAF0;
   /* пишется слева направо; 100% — ещё ничего не написано */
   clip-path:inset(-14% var(--r,100%) -14% -6%);
@@ -168,6 +160,15 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   will-change:clip-path;
   padding:0 .06em;
 }
+/* Сердце влезает между соседними строками: отрицательные поля
+   заводят его на строку сверху и на строку снизу. */
+.pheart{
+  font-size:clamp(28px,8vw,52px);
+  width:clamp(76px,22vw,124px);
+  margin:-.34em 0 -.30em;
+  z-index:2;
+}
+.pheart svg{width:100%;height:auto;display:block;overflow:visible}
 
 /* ===== общая колонка ===== */
 .wrap{
@@ -269,6 +270,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="9" result="n"/>
     <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
   </filter>
+  <filter id="heart-brush" x="-25%" y="-25%" width="150%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
 </defs></svg>
 
 <!-- мазок вдоль левого края -->
@@ -292,27 +297,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 <section class="stage">
   <div class="pin">
     <canvas id="wash" aria-hidden="true"></canvas>
-
-    <div class="heartwrap" aria-hidden="true">
-      <svg viewBox="0 0 100 100">
-        <defs>
-          <filter id="heart-brush" x="-25%" y="-25%" width="150%" height="150%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="4" result="n"/>
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/>
-          </filter>
-        </defs>
-        <g filter="url(#heart-brush)">
-          <path id="heart-main"
-            d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
-            fill="none" stroke="#E0567E" stroke-width="13"
-            stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
-          <path id="heart-hi"
-            d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
-            fill="none" stroke="#FFC2D2" stroke-width="3.4"
-            stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
-        </g>
-      </svg>
-    </div>
 
     <div class="phrase" id="phrase" aria-hidden="true"></div>
     <p class="sr" id="phrase-a11y"></p>
@@ -381,58 +365,91 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
      порядок и скорость. 0 = экран только прилип, 1 = сейчас отлипнет.
      ============================================================ */
   var T = {
-    hint:   [0.00, 0.09],   // подсказка «листай» уходит
-    lines:  [0.08, 0.74],   // на всю фразу, делится между строками поровну
-    heart:  [0.70, 0.96],   // сердце дорисовывается
-    lineOverlap: 0.03,      // насколько строки наезжают друг на друга
+    hint:    [0.00, 0.09],   // подсказка «листай» уходит
+    seq:     [0.08, 0.97],   // вся очередь: строки и сердце, делится поровну
+    overlap: 0.03,           // насколько соседние элементы наезжают друг на друга
   };
 
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
   function phase(p, r) { return clamp01((p - r[0]) / (r[1] - r[0])); }
 
-  /* ---------------- сборка фразы ---------------- */
+  /* ---------------- сборка очереди ---------------- */
+  var NS = "http://www.w3.org/2000/svg";
   var phraseEl = document.getElementById("phrase");
-  var lines = (typeof PHRASE !== "undefined" ? PHRASE : []).filter(function (t) {
-    return t && t.trim();
+  var raw = (typeof PHRASE !== "undefined" ? PHRASE : []).filter(function (t) {
+    return t && String(t).trim();
   });
-  var lineEls = [];
+  var items = [];          // {el, heart}
+  var heartPaths = null;
+  var len = 0;
 
-  lines.forEach(function (t) {
-    var d = document.createElement("div");
-    d.className = "pline";
-    d.textContent = t;
-    phraseEl.appendChild(d);
-    lineEls.push(d);
+  function buildHeart() {
+    var wrap = document.createElement("div");
+    wrap.className = "pheart";
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("aria-hidden", "true");
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("filter", "url(#heart-brush)");
+
+    var body = document.createElementNS(NS, "path");
+    body.setAttribute("d", HEART_D);
+    body.setAttribute("fill", "none");
+    body.setAttribute("stroke", "#E0567E");
+    body.setAttribute("stroke-width", "13");
+    body.setAttribute("stroke-linecap", "round");
+    body.setAttribute("stroke-linejoin", "round");
+    body.setAttribute("opacity", ".95");
+
+    var shine = body.cloneNode(false);
+    shine.setAttribute("stroke", "#FFC2D2");
+    shine.setAttribute("stroke-width", "3.4");
+    shine.setAttribute("opacity", ".5");
+
+    g.appendChild(body); g.appendChild(shine);
+    svg.appendChild(g); wrap.appendChild(svg);
+    heartPaths = [body, shine];
+    return wrap;
+  }
+
+  raw.forEach(function (t) {
+    if (typeof HEART !== "undefined" && t === HEART) {
+      var h = buildHeart();
+      phraseEl.appendChild(h);
+      items.push({ el: h, heart: true });
+    } else {
+      var d = document.createElement("div");
+      d.className = "pline";
+      d.textContent = t;
+      phraseEl.appendChild(d);
+      items.push({ el: d, heart: false });
+    }
   });
-  document.getElementById("phrase-a11y").textContent = lines.join(" ");
 
-  // диапазон прокрутки, за который пишется i-я строка
-  function lineRange(i) {
-    var n = lines.length || 1;
-    var w = (T.lines[1] - T.lines[0]) / n;
-    var a = T.lines[0] + i * w;
-    return [a, a + w + T.lineOverlap];
+  document.getElementById("phrase-a11y").textContent =
+    raw.filter(function (t) { return t !== HEART; }).join(". ");
+
+  // диапазон прокрутки, за который проявляется i-й элемент очереди
+  function itemRange(i) {
+    var n = items.length || 1;
+    var w = (T.seq[1] - T.seq[0]) / n;
+    var a = T.seq[0] + i * w;
+    return [a, a + w + T.overlap];
   }
 
   /* ---------------- сердце ---------------- */
-  var main  = document.getElementById("heart-main");
-  var hi    = document.getElementById("heart-hi");
-  var heart = document.querySelector(".heartwrap");
-  var len   = 0;
-
   function setupHeart() {
-    if (!main) return;
-    len = main.getTotalLength();
-    [main, hi].forEach(function (p) {
+    if (!heartPaths) return;
+    len = heartPaths[0].getTotalLength();
+    heartPaths.forEach(function (p) {
       p.style.strokeDasharray = len;
       p.style.strokeDashoffset = len;
     });
   }
   function heartAt(t) {
-    if (!main || !len) return;
+    if (!heartPaths || !len) return;
     var off = len * (1 - clamp01(t));
-    main.style.strokeDashoffset = off;
-    hi.style.strokeDashoffset = off;
+    heartPaths.forEach(function (p) { p.style.strokeDashoffset = off; });
   }
 
   /* ---------------- прогресс сцены ---------------- */
@@ -448,17 +465,16 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   }
 
   function render(p) {
-    lineEls.forEach(function (el, i) {
-      var w = phase(p, lineRange(i));
-      el.style.setProperty("--r", ((1 - w) * 100).toFixed(2) + "%");
+    items.forEach(function (it, i) {
+      var w = phase(p, itemRange(i));
+      if (it.heart) {
+        heartAt(w);
+      } else {
+        it.el.style.setProperty("--r", ((1 - w) * 100).toFixed(2) + "%");
+      }
     });
 
     if (hintEl) hintEl.style.opacity = 1 - phase(p, T.hint);
-
-    var h = phase(p, T.heart);
-    if (heart) heart.style.opacity = h;
-    heartAt(h);
-
   }
 
   function onScroll() {
