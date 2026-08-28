@@ -24,7 +24,7 @@
     "я поздравляю тебя",
     "тебе сегодня 18 лет",
     "Я люблю тебя и по этому",
-    "желаю тебе всего самого",
+    { text: "желаю тебе всего самого", cancel: "strike", cancelWord: "самого" },
     { text: "самого",  scale: 1.25, cancel: "strike" },
     { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.26 },
     { text: "самого",  scale: 1.9,  cancel: "circle", lift: 0.24 },
@@ -477,6 +477,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         scale:  e.scale || 1,
         pink:   !!e.pink,
         lift:   e.lift || 0,          // подъём к предыдущей строке, в em
+        cancelWord: e.cancelWord || null,  // зачеркнуть только это слово
         cancel: e.cancel || null      // "strike" | "hatch" | "circle" | null
       };
     }
@@ -526,6 +527,13 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       svg.appendChild(path);
       row.appendChild(svg);
       row._cancel = path;
+
+      // если отменяется одно слово — запомним его границы в символах,
+      // а в пиксели переведём после обмера букв
+      if (e.cancelWord) {
+        var wi = e.text.lastIndexOf(e.cancelWord);
+        if (wi >= 0) row._word = [wi, wi + e.cancelWord.length - 1];
+      }
     }
 
     phraseEl.appendChild(row);
@@ -584,10 +592,23 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   function setupCancels() {
     items.forEach(function (row) {
       if (!row._cancel) return;
+
+      // Сузить накладку до одного слова надо ДО замера длины пути:
+      // путь тянется по ширине холста, и от неё зависит его длина.
+      var svg = row._cancel.ownerSVGElement;
+      var wr = row._word, st = row._stops;
+      if (svg && wr && st && st.length) {
+        var a = wr[0] > 0 ? st[wr[0] - 1] : 0;
+        var b = st[Math.min(wr[1], st.length - 1)];
+        svg.style.left  = (a - 3) + "%";
+        svg.style.width = (b - a + 6) + "%";
+      }
+
       var L = row._cancel.getTotalLength();
       row._cancelLen = L;
       row._cancel.style.strokeDasharray = L;
       row._cancel.style.strokeDashoffset = L;
+      row._cancel.style.opacity = "0";
     });
   }
 
