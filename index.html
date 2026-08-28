@@ -118,7 +118,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    Дольше/короче — меняй только height у .stage.                      */
 .stage{
   position:relative;
-  height:330vh; height:330svh;
+  height:600vh; height:600svh;
   background:var(--deep);
 }
 .pin{
@@ -173,24 +173,53 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   align-items:center; justify-content:center;
   padding:0 6vw; pointer-events:none; text-align:center;
 }
-.pline{
-  font-family:'Caveat','Segoe Script',cursive;
-  font-weight:600;
-  /* --s — множитель размера, задаётся из PHRASE через scale */
+/* Строка = .prow (коробка по ширине текста) + .ptext (сами чернила)
+   + .pen (кончик пера). Перо снаружи маски, иначе оно бы ею срезалось. */
+.prow{
+  position:relative;
+  width:fit-content; max-width:100%;
+  margin:0 auto;
   font-size:calc(clamp(28px,8vw,52px) * var(--s,1));
   line-height:1.08;
-  color:#FFEAF0;
-  /* пишется слева направо; 100% — ещё ничего не написано */
-  clip-path:inset(-14% var(--r,100%) -14% -6%);
-  filter:url(#ink);
-  will-change:clip-path;
-  padding:0 .06em;
 }
-/* Сердце влезает между соседними строками: отрицательные поля
-   заводят его на строку сверху и на строку снизу. */
-/* Плюс вклинивается между двумя последними строками: отрицательные
-   поля заводят его на строку сверху и на строку снизу. */
-.pline.pink{color:#F0819E}
+.ptext{
+  display:block;
+  font-family:'Caveat','Segoe Script',cursive;
+  font-weight:600;
+  color:#FFEAF0;
+  padding:0 .06em;
+  filter:url(#ink);
+  /* Чернила проявляются мягким краем, а не ровным срезом:
+     --p — положение пера, от -16% (пусто) до 116% (написано). */
+  -webkit-mask-image:linear-gradient(90deg,
+    #000 calc(var(--p,-16%) - 15%),
+    rgba(0,0,0,.45) calc(var(--p,-16%) - 5%),
+    transparent var(--p,-16%));
+  mask-image:linear-gradient(90deg,
+    #000 calc(var(--p,-16%) - 15%),
+    rgba(0,0,0,.45) calc(var(--p,-16%) - 5%),
+    transparent var(--p,-16%));
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+}
+.prow.pink .ptext{color:#F0819E}
+
+/* кончик пера — светлая точка впереди чернил */
+.pen{
+  position:absolute; top:50%; left:calc(var(--p,-16%) - 8%);
+  width:.32em; height:.32em; margin:-.16em 0 0 -.16em;
+  border-radius:50%;
+  background:radial-gradient(circle,#FFF 0%,rgba(255,198,216,.85) 42%,transparent 72%);
+  opacity:var(--pen,0);
+  pointer-events:none;
+}
+
+/* Плюс вклинивается между соседними строками. */
+.prow.plus{
+  font-size:calc(clamp(46px,13vw,86px) * var(--s,1));
+  line-height:.7;
+  margin:-.24em auto -.20em;
+}
+.prow.plus .ptext{font-weight:700;color:#F0819E}
 
 /* Поцелуи по бокам экрана */
 .kisses{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
@@ -199,19 +228,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   width:clamp(58px,18vw,116px);
   opacity:0;
   will-change:transform,opacity;
-}
-
-.pplus{
-  font-family:'Caveat','Segoe Script',cursive;
-  font-weight:700;
-  font-size:clamp(46px,13vw,86px);
-  line-height:.7;
-  color:#F0819E;
-  margin:-.24em 0 -.20em;
-  clip-path:inset(-30% var(--r,100%) -30% -18%);
-  filter:url(#ink);
-  will-change:clip-path;
-  z-index:2;
 }
 
 /* ===== общая колонка ===== */
@@ -452,13 +468,22 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   var items = [];
 
   raw.forEach(function (e) {
-    var el = document.createElement("div");
     var isPlus = (typeof PLUS !== "undefined" && e.text === PLUS);
-    el.className = isPlus ? "pplus" : ("pline" + (e.pink ? " pink" : ""));
-    el.textContent = e.text;
-    if (!isPlus && e.scale !== 1) el.style.setProperty("--s", e.scale);
-    phraseEl.appendChild(el);
-    items.push(el);
+
+    var row = document.createElement("div");
+    row.className = "prow" + (isPlus ? " plus" : "") + (e.pink ? " pink" : "");
+    if (e.scale !== 1) row.style.setProperty("--s", e.scale);
+
+    var txt = document.createElement("span");
+    txt.className = "ptext";
+    txt.textContent = e.text;
+
+    var pen = document.createElement("i");
+    pen.className = "pen";
+
+    row.appendChild(txt); row.appendChild(pen);
+    phraseEl.appendChild(row);
+    items.push(row);
   });
 
   document.getElementById("phrase-a11y").textContent =
@@ -550,7 +575,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   function render(p) {
     items.forEach(function (el, i) {
       var w = phase(p, itemRange(i));
-      el.style.setProperty("--r", ((1 - w) * 100).toFixed(2) + "%");
+      // -16% — ещё ничего не написано, 116% — написано целиком
+      el.style.setProperty("--p", (w * 132 - 16).toFixed(2) + "%");
+      el.style.setProperty("--pen", (w > 0.015 && w < 0.985) ? "1" : "0");
     });
 
     heartAt(phase(p, T.heart));
