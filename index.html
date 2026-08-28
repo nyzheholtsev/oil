@@ -25,8 +25,8 @@
     "тебе сегодня 18 лет",
     "Я люблю тебя и по этому",
     "желаю тебе всего самого",
-    { text: "самого",  scale: 1.25 },
-    { text: "самого",  scale: 1.55 },
+    { text: "самого",  scale: 1.25, cancel: "strike" },
+    { text: "самого",  scale: 1.55, cancel: "hatch"  },
     { text: "самого",  scale: 1.9  },
     { text: "лучшего", scale: 2.3, pink: true },
   ];
@@ -217,6 +217,18 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   margin:-.24em auto -.20em;
 }
 .prow.plus .ptext{font-weight:700;color:#F0819E}
+
+/* Зачёркивание поверх строки: линия поперёк или зигзаг-зарисовка */
+.cancel{
+  position:absolute; left:-5%; top:0; width:110%; height:100%;
+  overflow:visible; pointer-events:none;
+}
+.cancel path{
+  fill:none; stroke:#F0819E;
+  stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+  filter:url(#ink);
+}
 
 /* Поцелуи по бокам экрана */
 .kisses{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
@@ -442,7 +454,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     hint:    [0.00, 0.09],   // подсказка «листай» уходит
     seq:     [0.08, 0.76],   // очередь: строки и плюс, делится поровну
     heart:   [0.74, 0.97],   // большое сердце обводит всё за текстом
-    pause:   0.20,           // доля слота на паузу ПОСЛЕ строки, перед следующей
+    pause:      0.20,        // хвост слота — пауза перед следующей строкой
+    writeFast:  0.46,        // строка, которую потом зачёркивают, пишется быстрее
+    cancelAt: [0.54, 0.90],  // доля слота, в которую идёт зачёркивание
   };
 
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -454,9 +468,14 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   // строка может быть текстом или объектом {text, scale, pink}
   function norm(e) {
     if (e && typeof e === "object") {
-      return { text: String(e.text || ""), scale: e.scale || 1, pink: !!e.pink };
+      return {
+        text:   String(e.text || ""),
+        scale:  e.scale || 1,
+        pink:   !!e.pink,
+        cancel: e.cancel || null      // "strike" | "hatch" | null
+      };
     }
-    return { text: String(e == null ? "" : e), scale: 1, pink: false };
+    return { text: String(e == null ? "" : e), scale: 1, pink: false, cancel: null };
   }
 
   var raw = (typeof PHRASE !== "undefined" ? PHRASE : [])
@@ -479,6 +498,23 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     pen.className = "pen";
 
     row.appendChild(txt); row.appendChild(pen);
+
+    if (e.cancel) {
+      var NSU = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(NSU, "svg");
+      svg.setAttribute("class", "cancel");
+      svg.setAttribute("viewBox", "0 0 100 30");
+      svg.setAttribute("preserveAspectRatio", "none");
+      svg.setAttribute("aria-hidden", "true");
+      var path = document.createElementNS(NSU, "path");
+      path.setAttribute("d", e.cancel === "hatch"
+        ? "M3,25 L17,6 L28,25 L43,5 L54,25 L69,7 L80,25 L95,6"
+        : "M2,19 C22,12 44,20 62,14 C78,10 90,17 98,12");
+      svg.appendChild(path);
+      row.appendChild(svg);
+      row._cancel = path;
+    }
+
     phraseEl.appendChild(row);
     items.push(row);
   });
@@ -488,13 +524,25 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
        .map(function (e) { return e.text; }).join(". ");
 
   // диапазон прокрутки, за который проявляется i-й элемент очереди
-  function itemRange(i) {
+  function slotOf(i) {
     var n = items.length || 1;
     var w = (T.seq[1] - T.seq[0]) / n;
     var a = T.seq[0] + i * w;
-    // строка укладывается в свой слот целиком, хвост слота — пауза,
-    // поэтому следующая не начинается, пока не дописана предыдущая
-    return [a, a + w * (1 - T.pause)];
+    return [a, a + w];
+  }
+  // доля слота -> абсолютный диапазон прокрутки
+  function part(slot, from, to) {
+    var d = slot[1] - slot[0];
+    return [slot[0] + d * from, slot[0] + d * to];
+  }
+  // когда строка пишется: со зачёркиванием — быстрее, надо успеть зачеркнуть
+  function itemRange(i) {
+    var slot = slotOf(i);
+    var hasCancel = items[i] && items[i]._cancel;
+    return part(slot, 0, hasCancel ? T.writeFast : 1 - T.pause);
+  }
+  function cancelRange(i) {
+    return part(slotOf(i), T.cancelAt[0], T.cancelAt[1]);
   }
 
   /* ---------------- обмер букв ----------------
@@ -517,6 +565,17 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       stops.push(last / box.width * 100);   // в процентах ширины строки
     }
     return stops.length ? stops : null;
+  }
+
+  // длина линии зачёркивания, чтобы вести её мазком, как сердце
+  function setupCancels() {
+    items.forEach(function (row) {
+      if (!row._cancel) return;
+      var L = row._cancel.getTotalLength();
+      row._cancelLen = L;
+      row._cancel.style.strokeDasharray = L;
+      row._cancel.style.strokeDashoffset = L;
+    });
   }
 
   function measureAll() {
@@ -614,6 +673,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         ink = w * 116 - 8;               // запасной вариант: ровная волна
       }
       el.style.setProperty("--p", ink.toFixed(2) + "%");
+
+      // зачёркивание ведётся мазком после того, как строка дописана
+      if (el._cancel && el._cancelLen) {
+        var c = phase(p, cancelRange(i));
+        el._cancel.style.strokeDashoffset = (el._cancelLen * (1 - c)).toFixed(2);
+      }
     });
 
     heartAt(phase(p, T.heart));
@@ -742,6 +807,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   function boot() {
     setupHeart();
     measureAll();
+    setupCancels();
     paintWash();
 
     if (reduce) {
@@ -763,6 +829,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       rt = setTimeout(function () {
         paintWash();
         measureAll();
+        setupCancels();
       }, 200);
     });
   }
