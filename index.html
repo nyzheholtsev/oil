@@ -42,6 +42,15 @@
     images: ["kiss1.png", "kiss2.png"],
   };
 
+  // Рука-стикер. Выталкивает лишние «самого» и освобождает место для «× ∞».
+  // push — номера строк PHRASE (с нуля), которые она вышвыривает за экран.
+  // keep — строка, которая после этого поднимается и получает «× ∞» справа.
+  const HAND = {
+    enabled: true,
+    push:    [5, 6],
+    keep:    7,
+  };
+
   const GREETING = {
     to:   "",              // её имя. Пусто — будет просто «С днём рождения»
     text: [
@@ -121,7 +130,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    Дольше/короче — меняй только height у .stage.                      */
 .stage{
   position:relative;
-  height:460vh; height:460svh;
+  height:590vh; height:590svh;
   background:var(--deep);
 }
 .pin{
@@ -233,6 +242,31 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
   vector-effect:non-scaling-stroke;
   filter:url(#ink);
+}
+
+/* Рука-стикер: выталкивает лишние строки. Кадра два — замах и удар,
+   они одного размера и выровнены, поэтому подмена не дёргается. */
+.hand{
+  position:absolute; left:0; top:0; z-index:4;
+  width:clamp(104px,30vw,184px); aspect-ratio:400/365;
+  pointer-events:none; will-change:transform;
+  filter:drop-shadow(0 10px 18px rgba(20,4,12,.32));
+}
+.hand img{
+  position:absolute; inset:0;
+  width:100%; height:100%; display:block;
+}
+
+/* «× ∞» справа от уцелевшего «самого». Рисуются мазком, как всё
+   остальное: сначала крестик, потом восьмёрка. */
+.mulinf{
+  position:absolute; left:100%; top:50%;
+  width:1.75em; height:.62em; margin:-.33em 0 0 .28em;
+  overflow:visible; pointer-events:none;
+}
+.mulinf path{
+  fill:none; stroke:#F0819E;
+  stroke-width:4.6; stroke-linecap:round; stroke-linejoin:round;
 }
 
 /* Поцелуи по бокам экрана */
@@ -393,6 +427,11 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     <div class="phrase" id="phrase" aria-hidden="true"></div>
     <p class="sr" id="phrase-a11y"></p>
 
+    <div class="hand" id="hand" aria-hidden="true">
+      <img id="hand-wind" src="hand-wind.png" alt="" decoding="async">
+      <img id="hand-push" src="hand-push.png" alt="" decoding="async">
+    </div>
+
     <div class="hint" id="hint" aria-hidden="true">
       <i>&#8595;</i>
       <span>Листай вниз</span>
@@ -457,9 +496,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
      порядок и скорость. 0 = экран только прилип, 1 = сейчас отлипнет.
      ============================================================ */
   var T = {
-    hint:    [0.00, 0.09],   // подсказка «листай» уходит
-    seq:     [0.08, 0.76],   // очередь: строки и плюс, делится поровну
-    heart:   [0.76, 1.00],   // сердце; доходит ровно до конца страницы
+    hint:    [0.000, 0.062],  // подсказка «листай» уходит
+    seq:     [0.055, 0.555],  // очередь: строки и плюс, делится поровну
+    hand:    [0.555, 0.830],  // рука: выталкивает лишнее и ставит «× ∞»
+    heart:   [0.800, 1.000],  // сердце; доходит ровно до конца страницы
     pause:      0.20,        // хвост слота — пауза перед следующей строкой
     writeFast:  0.46,        // строка, которую потом зачёркивают, пишется быстрее
     cancelAt: [0.54, 0.90],  // доля слота, в которую идёт зачёркивание
@@ -783,6 +823,177 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     });
   }
 
+  /* ---------------- рука и «× ∞» ----------------
+     Один непрерывный жест: рука влетает справа, сшибает лишние «самого»
+     за левый край, вместе с уцелевшей строкой поднимается в освободившееся
+     место, дотталкивает её влево и уходит. В отвоёванном справа месте
+     дорисовываются знак умножения и бесконечность.                       */
+  var HCFG    = (typeof HAND !== "undefined") ? HAND : {};
+  var pinEl   = document.querySelector(".pin");
+  var handEl  = document.getElementById("hand");
+  var windEl  = document.getElementById("hand-wind");
+  var pushEl  = document.getElementById("hand-push");
+
+  var pushRows = [], riseRows = [], keepRow = null;
+  (HCFG.push || []).forEach(function (i) { if (items[i]) pushRows.push(items[i]); });
+  if (HCFG.keep != null && items[HCFG.keep]) keepRow = items[HCFG.keep];
+
+  var handOn = HCFG.enabled !== false && !!pinEl && !!handEl &&
+               pushRows.length > 0 && !!keepRow;
+
+  if (handOn) {
+    // всё, что ниже вытолкнутых строк, поднимается вместе
+    var lastPushed = Math.max.apply(null, HCFG.push);
+    for (var hi = lastPushed + 1; hi < items.length; hi++) riseRows.push(items[hi]);
+    handOn = riseRows.length > 0 && riseRows.indexOf(keepRow) >= 0;
+  }
+  if (!handOn && handEl) handEl.style.display = "none";
+
+  // Доля общего окна руки -> абсолютный диапазон прокрутки.
+  function hpart(a, b) {
+    var d = T.hand[1] - T.hand[0];
+    return [T.hand[0] + d * a, T.hand[0] + d * b];
+  }
+  var H = {
+    approach: hpart(0.00, 0.15),   // подлетает справа
+    push:     hpart(0.13, 0.42),   // толчок, строки улетают
+    rise:     hpart(0.42, 0.60),   // подъём в освободившееся место
+    nudge:    hpart(0.58, 0.71),   // добивка влево — освобождает место справа
+    leave:    hpart(0.72, 0.86),   // уходит за правый край
+    mul:      hpart(0.86, 0.93),   // рисуется ×
+    inf:      hpart(0.92, 1.00)    // рисуется ∞
+  };
+
+  function mix(a, b, t) { return a + (b - a) * t; }
+  function ease(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  /* --- знаки: крестик двумя мазками, восьмёрка одним --- */
+  var mulPath = null, infPath = null, mulLen = 0, infLen = 0;
+
+  if (handOn) {
+    var NS = "http://www.w3.org/2000/svg";
+    var msvg = document.createElementNS(NS, "svg");
+    msvg.setAttribute("class", "mulinf");
+    msvg.setAttribute("viewBox", "0 0 124 44");
+    msvg.setAttribute("aria-hidden", "true");
+
+    var mg = document.createElementNS(NS, "g");
+    mg.setAttribute("filter", "url(#ink)");
+
+    mulPath = document.createElementNS(NS, "path");
+    mulPath.setAttribute("d", "M4,8 C11,16 23,28 31,36 M31,8 C24,16 12,28 4,36");
+
+    // лемниската одним росчерком, с лёгким перехлёстом на выходе
+    infPath = document.createElementNS(NS, "path");
+    infPath.setAttribute("d",
+      "M81,22 C81,4 118,4 118,22 C118,40 81,40 81,22 " +
+      "C81,4 44,4 44,22 C44,40 81,40 83,20");
+
+    mg.appendChild(mulPath); mg.appendChild(infPath);
+    msvg.appendChild(mg);
+    keepRow.appendChild(msvg);
+  }
+
+  function setupMulInf() {
+    if (!mulPath) return;
+    mulLen = mulPath.getTotalLength();
+    infLen = infPath.getTotalLength();
+    mulPath.style.strokeDasharray  = mulLen;
+    mulPath.style.strokeDashoffset = mulLen;
+    infPath.style.strokeDasharray  = infLen;
+    infPath.style.strokeDashoffset = infLen;
+    mulPath.style.opacity = infPath.style.opacity = "0";
+  }
+
+  /* --- обмер: где бить, куда поднимать, насколько толкать --- */
+  var G = { gap: 0, xa: 0, ya: 0, xk: 0, yk: 0, nudge: 0, out: 0, w: 0, hh: 0 };
+
+  function measureHand() {
+    if (!handOn) return;
+    // мерить надо чистую раскладку, без наших же сдвигов
+    pushRows.forEach(function (r) { r.style.transform = ""; });
+    riseRows.forEach(function (r) { r.style.transform = ""; });
+    phraseEl.style.transform = "";
+
+    var pr = pinEl.getBoundingClientRect();
+    var f  = pushRows[0].getBoundingClientRect();
+    var right = 0, bottom = f.bottom;
+    pushRows.forEach(function (r) {
+      var b = r.getBoundingClientRect();
+      if (b.right  > right ) right  = b.right;
+      if (b.bottom > bottom) bottom = b.bottom;
+    });
+
+    var kb = keepRow.getBoundingClientRect();
+    G.gap   = kb.top - f.top;                       // сколько места освободится
+    G.xa    = right - pr.left - 6;                  // куда упирается ладонь
+    G.ya    = (f.top + bottom) / 2 - pr.top;        // высота удара
+    // блок оседает к центру на половину зазора, значит строка уходит
+    // вверх тоже лишь на половину — ладонь должна встретить её именно там
+    G.xk    = kb.right - pr.left - 6;
+    G.yk    = (kb.top + kb.bottom) / 2 - pr.top - G.gap * .5;
+    G.out   = right - pr.left + 60;                 // до полного ухода за край
+    G.w     = pr.width;
+    G.hh    = handEl.offsetHeight || 120;
+    G.nudge = .95 * (parseFloat(getComputedStyle(keepRow).fontSize) || 40);
+  }
+
+  function renderHand(p) {
+    if (!handOn) return;
+
+    var pw = phase(p, H.push);
+    var re = ease(phase(p, H.rise));
+    var ne = ease(phase(p, H.nudge));
+    var SHOVE = G.w * .10;
+
+    // Пока рука касается — строки едут с ней; дальше их уже несёт разгоном.
+    var fly = Math.max(SHOVE * ease(pw), G.out * pw * pw * pw);
+    pushRows.forEach(function (r) {
+      r.style.transform = "translateX(" + (-fly).toFixed(1) + "px)" +
+                          " rotate(" + (-6 * pw).toFixed(2) + "deg)";
+    });
+
+    riseRows.forEach(function (r) {
+      var dx = (r === keepRow) ? -G.nudge * ne : 0;
+      r.style.transform = "translate(" + dx.toFixed(1) + "px," +
+                                         (-G.gap * re).toFixed(1) + "px)";
+    });
+    phraseEl.style.transform = "translateY(" + (G.gap * .5 * re).toFixed(1) + "px)";
+
+    // Путь ладони: цепочка «доехать до следующей точки». Пока следующая
+    // фаза не началась, её доля равна нулю и она ничего не меняет.
+    var xOut = G.w + 90;
+    var x = xOut, y = G.ya, rot = 14;
+    var a = ease(phase(p, H.approach)), l = ease(phase(p, H.leave));
+
+    x = mix(x, G.xa,             a);
+    x = mix(x, G.xa - SHOVE,     ease(pw));
+    x = mix(x, G.xk,             re);
+    x = mix(x, G.xk - G.nudge,   ne);
+    x = mix(x, xOut,             l);
+
+    y   = mix(y, G.yk, re);
+    rot = mix(rot, 0, a);
+    rot = mix(rot, 10, l);
+
+    handEl.style.transform =
+      "translate(" + x.toFixed(1) + "px," + (y - G.hh * .42).toFixed(1) + "px)" +
+      " rotate(" + rot.toFixed(1) + "deg)";
+
+    // замах / удар: ладонь распрямляется ровно в момент толчка
+    var hit = pw > .03 && phase(p, H.leave) < .25;
+    if (windEl) windEl.style.opacity = hit ? "0" : "1";
+    if (pushEl) pushEl.style.opacity = hit ? "1" : "0";
+
+    if (mulPath) {
+      var m = ease(phase(p, H.mul)), n = ease(phase(p, H.inf));
+      mulPath.style.strokeDashoffset = mulLen * (1 - m);
+      infPath.style.strokeDashoffset = infLen * (1 - n);
+      mulPath.style.opacity = m > .001 ? "1" : "0";
+      infPath.style.opacity = n > .001 ? "1" : "0";
+    }
+  }
+
   /* ---------------- большое сердце ---------------- */
   var hMain = document.getElementById("heart-main");
   var hHi   = document.getElementById("heart-hi");
@@ -846,6 +1057,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
     heartAt(phase(p, T.heart));
     renderKisses(p);
+    renderHand(p);
 
     if (hintEl) hintEl.style.opacity = 1 - phase(p, T.hint);
   }
@@ -971,6 +1183,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     setupHeart();
     measureAll();
     setupCancels();
+    measureHand();
+    setupMulInf();
     paintWash();
 
     if (reduce) {
@@ -993,6 +1207,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         paintWash();
         measureAll();
         setupCancels();
+        measureHand();
+        setupMulInf();
+        if (reduce) render(1); else onScroll();
       }, 200);
     });
   }
