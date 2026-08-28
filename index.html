@@ -12,8 +12,8 @@
      ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай.
      ============================================================ */
 
-  // Сердце в последовательности — ставь HEART там, где оно должно рисоваться.
-  const HEART = "♥";
+  // Розовый плюс между строками — ставь PLUS там, где он нужен.
+  const PLUS = "+";
 
   // Что пишется по очереди на первом экране.
   // Добавляй и убирай строки свободно — тайминг поделится сам.
@@ -22,7 +22,7 @@
     "Я поздравляю тебя",
     "Тебе сегодня 18 лет",
     "Я люблю тебя",
-    HEART,
+    PLUS,
     "желаю всего самого лучшего",
   ];
 
@@ -122,6 +122,18 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   background:linear-gradient(180deg,rgba(46,14,29,.10) 0%,rgba(46,14,29,.30) 55%,rgba(46,14,29,.88) 100%);
 }
 
+/* --- большое сердце: рисуется последним, за текстом --- */
+.heartwrap{
+  position:absolute; inset:0; z-index:-1;
+  display:grid; place-items:center;
+  pointer-events:none;
+}
+.heartwrap svg{
+  width:min(86vw,380px); aspect-ratio:1; height:auto;
+  overflow:visible; opacity:.5;
+  transform:translateY(-4%);
+}
+
 /* --- подсказка «листай» в самом начале --- */
 .hint{
   position:absolute; inset:0; z-index:2;
@@ -162,15 +174,20 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 }
 /* Сердце влезает между соседними строками: отрицательные поля
    заводят его на строку сверху и на строку снизу. */
-.pheart{
-  font-size:clamp(28px,8vw,52px);
-  width:clamp(84px,25vw,140px);
-  /* Снизу поле больше: путь сердца не достаёт до низа своего квадрата,
-     и часть отступа уходит на эту пустоту. */
-  margin:-.42em 0 -.62em;
+/* Плюс вклинивается между двумя последними строками: отрицательные
+   поля заводят его на строку сверху и на строку снизу. */
+.pplus{
+  font-family:'Caveat','Segoe Script',cursive;
+  font-weight:700;
+  font-size:clamp(46px,13vw,86px);
+  line-height:.7;
+  color:#F0819E;
+  margin:-.24em 0 -.20em;
+  clip-path:inset(-30% var(--r,100%) -30% -18%);
+  filter:url(#ink);
+  will-change:clip-path;
   z-index:2;
 }
-.pheart svg{width:100%;height:auto;display:block;overflow:visible}
 
 /* ===== общая колонка ===== */
 .wrap{
@@ -300,6 +317,21 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   <div class="pin">
     <canvas id="wash" aria-hidden="true"></canvas>
 
+    <div class="heartwrap" aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <g filter="url(#heart-brush)">
+          <path id="heart-main"
+            d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
+            fill="none" stroke="#E0567E" stroke-width="13"
+            stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+          <path id="heart-hi"
+            d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z"
+            fill="none" stroke="#FFC2D2" stroke-width="3.4"
+            stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+        </g>
+      </svg>
+    </div>
+
     <div class="phrase" id="phrase" aria-hidden="true"></div>
     <p class="sr" id="phrase-a11y"></p>
 
@@ -368,7 +400,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
      ============================================================ */
   var T = {
     hint:    [0.00, 0.09],   // подсказка «листай» уходит
-    seq:     [0.08, 0.97],   // вся очередь: строки и сердце, делится поровну
+    seq:     [0.08, 0.76],   // очередь: строки и плюс, делится поровну
+    heart:   [0.74, 0.97],   // большое сердце обводит всё за текстом
     overlap: 0.03,           // насколько соседние элементы наезжают друг на друга
   };
 
@@ -376,60 +409,23 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   function phase(p, r) { return clamp01((p - r[0]) / (r[1] - r[0])); }
 
   /* ---------------- сборка очереди ---------------- */
-  var NS = "http://www.w3.org/2000/svg";
   var phraseEl = document.getElementById("phrase");
   var raw = (typeof PHRASE !== "undefined" ? PHRASE : []).filter(function (t) {
     return t && String(t).trim();
   });
-  var items = [];          // {el, heart}
-  var heartPaths = null;
-  var len = 0;
-
-  function buildHeart() {
-    var wrap = document.createElement("div");
-    wrap.className = "pheart";
-    var svg = document.createElementNS(NS, "svg");
-    svg.setAttribute("viewBox", "0 0 100 100");
-    svg.setAttribute("aria-hidden", "true");
-    var g = document.createElementNS(NS, "g");
-    g.setAttribute("filter", "url(#heart-brush)");
-
-    var body = document.createElementNS(NS, "path");
-    body.setAttribute("d", HEART_D);
-    body.setAttribute("fill", "none");
-    body.setAttribute("stroke", "#E0567E");
-    body.setAttribute("stroke-width", "13");
-    body.setAttribute("stroke-linecap", "round");
-    body.setAttribute("stroke-linejoin", "round");
-    body.setAttribute("opacity", ".95");
-
-    var shine = body.cloneNode(false);
-    shine.setAttribute("stroke", "#FFC2D2");
-    shine.setAttribute("stroke-width", "3.4");
-    shine.setAttribute("opacity", ".5");
-
-    g.appendChild(body); g.appendChild(shine);
-    svg.appendChild(g); wrap.appendChild(svg);
-    heartPaths = [body, shine];
-    return wrap;
-  }
+  var items = [];
 
   raw.forEach(function (t) {
-    if (typeof HEART !== "undefined" && t === HEART) {
-      var h = buildHeart();
-      phraseEl.appendChild(h);
-      items.push({ el: h, heart: true });
-    } else {
-      var d = document.createElement("div");
-      d.className = "pline";
-      d.textContent = t;
-      phraseEl.appendChild(d);
-      items.push({ el: d, heart: false });
-    }
+    var el = document.createElement("div");
+    var isPlus = (typeof PLUS !== "undefined" && t === PLUS);
+    el.className = isPlus ? "pplus" : "pline";
+    el.textContent = t;
+    phraseEl.appendChild(el);
+    items.push(el);
   });
 
   document.getElementById("phrase-a11y").textContent =
-    raw.filter(function (t) { return t !== HEART; }).join(". ");
+    raw.filter(function (t) { return t !== PLUS; }).join(". ");
 
   // диапазон прокрутки, за который проявляется i-й элемент очереди
   function itemRange(i) {
@@ -439,19 +435,24 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     return [a, a + w + T.overlap];
   }
 
-  /* ---------------- сердце ---------------- */
+  /* ---------------- большое сердце ---------------- */
+  var hMain = document.getElementById("heart-main");
+  var hHi   = document.getElementById("heart-hi");
+  var len   = 0;
+
   function setupHeart() {
-    if (!heartPaths) return;
-    len = heartPaths[0].getTotalLength();
-    heartPaths.forEach(function (p) {
-      p.style.strokeDasharray = len;
-      p.style.strokeDashoffset = len;
+    if (!hMain) return;
+    len = hMain.getTotalLength();
+    [hMain, hHi].forEach(function (el) {
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
     });
   }
   function heartAt(t) {
-    if (!heartPaths || !len) return;
+    if (!hMain || !len) return;
     var off = len * (1 - clamp01(t));
-    heartPaths.forEach(function (p) { p.style.strokeDashoffset = off; });
+    hMain.style.strokeDashoffset = off;
+    hHi.style.strokeDashoffset = off;
   }
 
   /* ---------------- прогресс сцены ---------------- */
@@ -467,14 +468,12 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   }
 
   function render(p) {
-    items.forEach(function (it, i) {
+    items.forEach(function (el, i) {
       var w = phase(p, itemRange(i));
-      if (it.heart) {
-        heartAt(w);
-      } else {
-        it.el.style.setProperty("--r", ((1 - w) * 100).toFixed(2) + "%");
-      }
+      el.style.setProperty("--r", ((1 - w) * 100).toFixed(2) + "%");
     });
+
+    heartAt(phase(p, T.heart));
 
     if (hintEl) hintEl.style.opacity = 1 - phase(p, T.hint);
   }
