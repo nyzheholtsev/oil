@@ -49,6 +49,8 @@
     enabled: true,
     push:    [5, 6],
     keep:    7,
+    tight:   0.45,     // насколько плотнее сходятся три последние строки:
+                       // доля просвета, которую убираем. 0 — как было.
   };
 
   const GREETING = {
@@ -947,8 +949,47 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     mulPath.style.opacity = infPath.style.opacity = "0";
   }
 
+  /* --- где у строки настоящие чернила ---
+     Коробка строки заметно выше букв: сверху место под выносные,
+     снизу под хвосты. Ровнять знаки и просветы надо по чернилам,
+     иначе всё визуально уезжает вверх. Метрики берём у самого
+     шрифта через canvas — так они верны при любом кегле. */
+  var probe = document.createElement("canvas").getContext("2d");
+
+  function inkBox(row) {
+    var t = row.querySelector(".ptext");
+    if (!t || !probe) return null;
+    var cs = getComputedStyle(t), fs = parseFloat(cs.fontSize);
+    probe.font = cs.fontWeight + " " + fs + "px " + cs.fontFamily;
+    var m = probe.measureText(t.textContent);
+    if (!isFinite(m.actualBoundingBoxAscent) ||
+        !isFinite(m.fontBoundingBoxAscent)) return null;
+
+    var b = row.getBoundingClientRect();
+    var base = b.top + (b.height - (m.fontBoundingBoxAscent +
+                                    m.fontBoundingBoxDescent)) / 2
+                     + m.fontBoundingBoxAscent;
+    return {
+      fs:   fs,
+      top:  b.top,
+      bot:  b.bottom,
+      ink1: base - m.actualBoundingBoxAscent,   // верх букв
+      ink2: base + m.actualBoundingBoxDescent   // низ букв
+    };
+  }
+
+  // Знаки ставим по центру чернил слова, а не по центру его коробки.
+  function alignSigns(k) {
+    if (!mulPath || !k) return;
+    var svg = mulPath.ownerSVGElement;
+    var h = 0.62 * k.fs;                        // высота знаков из вёрстки
+    svg.style.top = ((k.ink1 + k.ink2) / 2 - k.top - h / 2).toFixed(1) + "px";
+    svg.style.marginTop = "0";
+  }
+
   /* --- обмер: где бить, куда поднимать, насколько толкать --- */
-  var G = { gap: 0, xa: 0, ya: 0, xk: 0, yk: 0, nudge: 0, out: 0, w: 0, hh: 0 };
+  var G = { gap: 0, xa: 0, ya: 0, xk: 0, yk: 0, nudge: 0, out: 0, w: 0, hh: 0,
+            tightA: 0, tightB: 0 };
 
   function measureHand() {
     if (!handOn) return;
@@ -978,6 +1019,28 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     G.w     = pr.width;
     G.hh    = handEl.offsetHeight || 120;
     G.nudge = .95 * (parseFloat(getComputedStyle(keepRow).fontSize) || 40);
+
+    // Три последние строки в финале стоят слишком просторно: коробки
+    // строк выше букв. Убираем заданную долю живого просвета — но
+    // только на подъёме, пока строки пишутся, вёрстка не меняется.
+    var kInk = inkBox(keepRow);
+    alignSigns(kInk);
+
+    G.tightA = G.tightB = 0;
+    var tf = (HCFG.tight == null) ? 0 : +HCFG.tight;
+    var above = items[Math.min.apply(null, HCFG.push) - 1];
+    var next  = riseRows[riseRows.indexOf(keepRow) + 1];
+
+    if (tf > 0 && kInk) {
+      var aInk = above && inkBox(above);
+      if (aInk) {
+        // после подъёма верх keep встаёт вплотную к низу коробки above
+        G.tightA = Math.max(0, (kInk.ink1 - kInk.top) +
+                               (aInk.bot - aInk.ink2)) * tf;
+      }
+      var nInk = next && inkBox(next);
+      if (nInk) G.tightB = Math.max(0, nInk.ink1 - kInk.ink2) * tf;
+    }
   }
 
   function renderHand(p) {
@@ -995,12 +1058,15 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
                           " rotate(" + (-6 * pw).toFixed(2) + "deg)";
     });
 
+    var upK = G.gap + G.tightA;              // подъём самой keep
     riseRows.forEach(function (r) {
       var dx = (r === keepRow) ? -G.nudge * ne : 0;
+      // то, что ниже keep, идёт ещё выше — на свой собственный просвет
+      var dy = (r === keepRow) ? upK : upK + G.tightB;
       r.style.transform = "translate(" + dx.toFixed(1) + "px," +
-                                         (-G.gap * re).toFixed(1) + "px)";
+                                         (-dy * re).toFixed(1) + "px)";
     });
-    phraseEl.style.transform = "translateY(" + (G.gap * .5 * re).toFixed(1) + "px)";
+    phraseEl.style.transform = "translateY(" + (upK * .5 * re).toFixed(1) + "px)";
 
     // Путь ладони: цепочка «доехать до следующей точки». Пока следующая
     // фаза не началась, её доля равна нулю и она ничего не меняет.
