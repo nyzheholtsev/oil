@@ -26,7 +26,7 @@
     "Я люблю тебя и по этому",
     { text: "желаю тебе всего самого", cancel: "strike", cancelWord: "самого" },
     { text: "самого",  scale: 1.25, cancel: "hatch"  },
-    { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.42 },
+    { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.36 },
     { text: "самого",  scale: 1.9,  cancel: "circle", lift: 0.24 },
     { text: "лучшего", scale: 2.3,  pink: true },
   ];
@@ -223,7 +223,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
 /* Зачёркивание поверх строки: линия поперёк или зигзаг-зарисовка */
 .cancel{
-  position:absolute; left:-5%; top:0; width:110%; height:100%;
+  /* по высоте обнимаем само слово, а не строку целиком: иначе у
+     подтянутых друг к другу строк отметки налезают одна на другую */
+  position:absolute; left:-5%; top:14%; width:110%; height:72%;
   overflow:visible; pointer-events:none;
 }
 .cancel path{
@@ -516,12 +518,29 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       svg.setAttribute("preserveAspectRatio", "none");
       svg.setAttribute("aria-hidden", "true");
       var path = document.createElementNS(NSU, "path");
+      // Зачёрканность: три прохода туда-обратно со случайными изломами.
+      // У каждой строки свой рисунок — одинаковых каракулей не бывает.
+      function hatchPath(seed) {
+        var r = rng(seed * 977 + 31), pts = [], pass, x, end, fwd, up;
+        for (pass = 0; pass < 3; pass++) {
+          fwd = pass % 2 === 0;
+          x   = fwd ? 3 : 97;
+          end = fwd ? 97 : 3;
+          up  = pass % 2 === 0;
+          while (fwd ? x < end : x > end) {
+            pts.push([x, up ? (3 + r() * 7) : (20 + r() * 8)]);
+            up = !up;
+            x += (fwd ? 1 : -1) * (4.5 + r() * 4.5);
+          }
+          pts.push([end, up ? (4 + r() * 6) : (21 + r() * 7)]);
+        }
+        return "M" + pts.map(function (q) {
+          return q[0].toFixed(1) + "," + q[1].toFixed(1);
+        }).join(" L");
+      }
+
       var CANCEL_D = {
-        // проход слева направо и обратно — так это читается
-        // как зачёрканность, а не как одинокая галочка
-        hatch:  "M3,23 L13,6 L23,24 L33,5 L43,24 L53,6 L63,24 L73,5 " +
-                "L83,24 L93,7 L97,16 L88,27 L78,9 L68,27 L58,8 " +
-                "L48,27 L38,9 L28,27 L18,8 L8,26 L3,17",
+        hatch:  hatchPath(items.length + 1),
         strike: "M2,19 C22,12 44,20 62,14 C78,10 90,17 98,12",
         // обводка с перехлёстом, как обводят от руки
         circle: "M4,15 C4,5 26,1 50,1 C76,1 97,6 97,15 C97,25 74,29 48,29 " +
