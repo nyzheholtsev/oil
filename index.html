@@ -130,7 +130,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    Дольше/короче — меняй только height у .stage.                      */
 .stage{
   position:relative;
-  height:590vh; height:590svh;
+  height:660vh; height:660svh;
   background:var(--deep);
 }
 .pin{
@@ -496,10 +496,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
      порядок и скорость. 0 = экран только прилип, 1 = сейчас отлипнет.
      ============================================================ */
   var T = {
-    hint:    [0.000, 0.062],  // подсказка «листай» уходит
-    seq:     [0.055, 0.555],  // очередь: строки и плюс, делится поровну
-    hand:    [0.555, 0.830],  // рука: выталкивает лишнее и ставит «× ∞»
-    heart:   [0.800, 1.000],  // сердце; доходит ровно до конца страницы
+    hint:    [0.000, 0.054],  // подсказка «листай» уходит
+    seq:     [0.048, 0.486],  // очередь: строки и плюс, делится поровну
+    hand:    [0.486, 0.852],  // рука: выталкивает лишнее и ставит «× ∞»
+    heart:   [0.824, 1.000],  // сердце; доходит ровно до конца страницы
     pause:      0.20,        // хвост слота — пауза перед следующей строкой
     writeFast:  0.46,        // строка, которую потом зачёркивают, пишется быстрее
     cancelAt: [0.54, 0.90],  // доля слота, в которую идёт зачёркивание
@@ -855,13 +855,16 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     return [T.hand[0] + d * a, T.hand[0] + d * b];
   }
   var H = {
-    approach: hpart(0.00, 0.15),   // подлетает справа
-    push:     hpart(0.13, 0.42),   // толчок, строки улетают
-    rise:     hpart(0.42, 0.60),   // подъём в освободившееся место
-    nudge:    hpart(0.58, 0.71),   // добивка влево — освобождает место справа
-    leave:    hpart(0.72, 0.86),   // уходит за правый край
-    mul:      hpart(0.86, 0.93),   // рисуется ×
-    inf:      hpart(0.92, 1.00)    // рисуется ∞
+    approach: hpart(0.00, 0.11),   // влетает справа
+    push:     hpart(0.09, 0.26),   // толчок, лишние строки улетают
+    exit:     hpart(0.24, 0.34),   // уходит — дальше сцена играет без неё
+    rise:     hpart(0.36, 0.52),   // строка поднимается сама
+    // 0.52–0.64 рука за экраном: пауза, чтобы стало видно новый расклад
+    back:     hpart(0.64, 0.73),   // возвращается
+    nudge:    hpart(0.72, 0.81),   // подпинывает влево, освобождая место
+    gone:     hpart(0.81, 0.89),   // уходит совсем
+    mul:      hpart(0.89, 0.945),  // рисуется ×
+    inf:      hpart(0.94, 1.00)    // рисуется ∞
   };
 
   function mix(a, b, t) { return a + (b - a) * t; }
@@ -883,15 +886,54 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     mulPath = document.createElementNS(NS, "path");
     mulPath.setAttribute("d", "M4,8 C11,16 23,28 31,36 M31,8 C24,16 12,28 4,36");
 
-    // лемниската одним росчерком, с лёгким перехлёстом на выходе
     infPath = document.createElementNS(NS, "path");
-    infPath.setAttribute("d",
-      "M81,22 C81,4 118,4 118,22 C118,40 81,40 81,22 " +
-      "C81,4 44,4 44,22 C44,40 81,40 83,20");
+    infPath.setAttribute("d", infD(84, 22, 14.5, 21.5, -5, 1.45));
 
     mg.appendChild(mulPath); mg.appendChild(infPath);
     msvg.appendChild(mg);
     keepRow.appendChild(msvg);
+  }
+
+  // Восьмёрка: две круглые петли, соединённые скрещёнными касательными.
+  // Лемниската из учебника даёт «бантик» — лепестки сходятся в точку;
+  // здесь штрихи по-настоящему пересекаются, а петли остаются круглыми.
+  // Одним росчерком от центра: вверх-вправо, правая петля, обратно через
+  // центр, левая петля и чуть за него — как перехлёст пера.
+  //   R — радиус петли, D — вынос её центра от перекрестья (D > R),
+  //   bow — насколько выгнуты прямые куски, чтобы не было чертёжно.
+  function infD(cx, cy, R, D, tiltDeg, bow) {
+    var L  = Math.sqrt(D * D - R * R);    // от центра до точки касания
+    var tx = L * L / D, ty = L * R / D;   // сама точка касания
+    var P  = [[0, 0]];
+
+    function line(x1, y1, x2, y2, n) {
+      var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+      for (var i = 1; i <= n; i++) {
+        var u = i / n, b = bow * Math.sin(u * Math.PI) / len;
+        P.push([x1 + dx * u - dy * b, y1 + dy * u + dx * b]);
+      }
+    }
+    function arc(ox, f1, f2, n) {
+      for (var i = 1; i <= n; i++) {
+        var f = f1 + (f2 - f1) * i / n;
+        P.push([ox + R * Math.cos(f), R * Math.sin(f)]);
+      }
+    }
+
+    var p1 = Math.atan2(-L, -R), p2 = Math.atan2(L, -R);
+    var q1 = Math.atan2(-L,  R), q2 = q1 - 2 * (Math.PI - Math.abs(q1));
+
+    line(0, 0, tx, -ty, 6);                    // от перекрестья вверх-вправо
+    arc(D, p1, p2, 34);                        // правая петля
+    line(tx, ty, -tx, -ty, 10);                // назад через центр, вверх-влево
+    arc(-D, q1, q2, 34);                       // левая петля
+    line(-tx, ty, tx * 0.18, -ty * 0.18, 8);   // домой и немного за
+
+    var a = tiltDeg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+    return "M" + P.map(function (q) {
+      return (cx + q[0] * co - q[1] * si).toFixed(1) + "," +
+             (cy + q[0] * si + q[1] * co).toFixed(1);
+    }).join(" L");
   }
 
   function setupMulInf() {
@@ -962,26 +1004,33 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
     // Путь ладони: цепочка «доехать до следующей точки». Пока следующая
     // фаза не началась, её доля равна нулю и она ничего не меняет.
+    // Между exit и back рука за экраном — там строка поднимается сама,
+    // и высоту ей меняем именно в это время, чтобы не было видно скачка.
     var xOut = G.w + 90;
     var x = xOut, y = G.ya, rot = 14;
-    var a = ease(phase(p, H.approach)), l = ease(phase(p, H.leave));
+    var a1 = ease(phase(p, H.approach)), e1 = ease(phase(p, H.exit));
+    var a2 = ease(phase(p, H.back)),     e2 = ease(phase(p, H.gone));
 
-    x = mix(x, G.xa,             a);
-    x = mix(x, G.xa - SHOVE,     ease(pw));
-    x = mix(x, G.xk,             re);
-    x = mix(x, G.xk - G.nudge,   ne);
-    x = mix(x, xOut,             l);
+    x = mix(x, G.xa,           a1);
+    x = mix(x, G.xa - SHOVE,   ease(pw));
+    x = mix(x, xOut,           e1);
+    x = mix(x, G.xk,           a2);
+    x = mix(x, G.xk - G.nudge, ne);
+    x = mix(x, xOut,           e2);
 
-    y   = mix(y, G.yk, re);
-    rot = mix(rot, 0, a);
-    rot = mix(rot, 10, l);
+    y   = mix(y,   G.yk, re);
+    rot = mix(rot,   0, a1);
+    rot = mix(rot,  13, e1);
+    rot = mix(rot,   0, a2);
+    rot = mix(rot,  13, e2);
 
     handEl.style.transform =
       "translate(" + x.toFixed(1) + "px," + (y - G.hh * .42).toFixed(1) + "px)" +
       " rotate(" + rot.toFixed(1) + "deg)";
 
     // замах / удар: ладонь распрямляется ровно в момент толчка
-    var hit = pw > .03 && phase(p, H.leave) < .25;
+    var hit = (pw > .03                  && phase(p, H.exit) < .2) ||
+              (phase(p, H.nudge) > .03   && phase(p, H.gone) < .2);
     if (windEl) windEl.style.opacity = hit ? "0" : "1";
     if (pushEl) pushEl.style.opacity = hit ? "1" : "0";
 
