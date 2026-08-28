@@ -189,23 +189,20 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   color:#FFEAF0;
   padding:0 .06em;
   filter:url(#ink);
-  /* Чернила проявляются мягким краем, а не ровным срезом:
-     --p — положение пера, от -16% (пусто) до 116% (написано). */
+  /* --p — граница чернил, снимается с реальных краёв букв.
+     repeat-y обязателен: без него маска режет нижние выносные
+     элементы («з», «у», «р»), торчащие за строку. */
   -webkit-mask-image:linear-gradient(90deg,
-    #000 calc(var(--p,-16%) - 15%),
-    rgba(0,0,0,.45) calc(var(--p,-16%) - 5%),
-    transparent var(--p,-16%));
+    #000 calc(var(--p,-8%) - 5%), transparent var(--p,-8%));
   mask-image:linear-gradient(90deg,
-    #000 calc(var(--p,-16%) - 15%),
-    rgba(0,0,0,.45) calc(var(--p,-16%) - 5%),
-    transparent var(--p,-16%));
-  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+    #000 calc(var(--p,-8%) - 5%), transparent var(--p,-8%));
+  -webkit-mask-repeat:repeat-y; mask-repeat:repeat-y;
 }
 .prow.pink .ptext{color:#F0819E}
 
 /* кончик пера — светлая точка впереди чернил */
 .pen{
-  position:absolute; top:50%; left:calc(var(--p,-16%) - 8%);
+  position:absolute; top:50%; left:var(--pp,-8%);
   width:.32em; height:.32em; margin:-.16em 0 0 -.16em;
   border-radius:50%;
   background:radial-gradient(circle,#FFF 0%,rgba(255,198,216,.85) 42%,transparent 72%);
@@ -498,6 +495,32 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     return [a, a + w + T.overlap];
   }
 
+  /* ---------------- обмер букв ----------------
+     Снимаем правый край каждой буквы, чтобы чернила проявлялись
+     побуквенно, а не сползали ровной волной. Перо при этом едет плавно. */
+  function measureRow(row) {
+    var txt = row.querySelector(".ptext");
+    var node = txt && txt.firstChild;
+    if (!node || node.nodeType !== 3) return null;
+
+    var box = txt.getBoundingClientRect();
+    if (!box.width) return null;
+
+    var rng = document.createRange();
+    var stops = [], last = 0;
+    for (var i = 0; i < node.length; i++) {
+      rng.setStart(node, i); rng.setEnd(node, i + 1);
+      var r = rng.getBoundingClientRect();
+      last = Math.max(last, r.right - box.left);
+      stops.push(last / box.width * 100);   // в процентах ширины строки
+    }
+    return stops.length ? stops : null;
+  }
+
+  function measureAll() {
+    items.forEach(function (row) { row._stops = measureRow(row); });
+  }
+
   /* ---------------- поцелуи ---------------- */
   // Точки вылета: сторона, высота, наклон и момент внутри строки.
   var SPOTS = [
@@ -575,9 +598,20 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   function render(p) {
     items.forEach(function (el, i) {
       var w = phase(p, itemRange(i));
-      // -16% — ещё ничего не написано, 116% — написано целиком
-      el.style.setProperty("--p", (w * 132 - 16).toFixed(2) + "%");
+
+      // перо едет плавно от -8% до 108%
+      el.style.setProperty("--pp", (w * 116 - 8).toFixed(2) + "%");
       el.style.setProperty("--pen", (w > 0.015 && w < 0.985) ? "1" : "0");
+
+      // чернила догоняют перо по границам букв
+      var st = el._stops, ink;
+      if (st && st.length) {
+        var done = Math.floor(w * st.length + 1e-9);
+        ink = done <= 0 ? -8 : (done >= st.length ? 112 : st[done - 1]);
+      } else {
+        ink = w * 116 - 8;               // запасной вариант: ровная волна
+      }
+      el.style.setProperty("--p", ink.toFixed(2) + "%");
     });
 
     heartAt(phase(p, T.heart));
@@ -705,6 +739,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   /* ---------------- запуск ---------------- */
   function boot() {
     setupHeart();
+    measureAll();
     paintWash();
 
     if (reduce) {
@@ -725,7 +760,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       clearTimeout(rt);
       rt = setTimeout(function () {
         paintWash();
-        if (!reduce) onScroll();
+        measureAll();
       }, 200);
     });
   }
