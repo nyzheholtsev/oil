@@ -97,10 +97,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 /* Сердце висит неподвижно, пока идёт первый экран: так она видит,
    как мазок замыкается, а не как он уезжает наверх недорисованным. */
 .heartwrap{
-  position:fixed; z-index:-1;
+  position:absolute; z-index:-1;
   left:50%; top:clamp(56px,12vh,120px); transform:translateX(-50%);
   width:min(66vw,300px); aspect-ratio:1;
-  will-change:opacity; pointer-events:none;
+  will-change:transform,opacity; pointer-events:none;
 }
 .heartwrap svg{width:100%;height:100%;overflow:visible}
 
@@ -480,13 +480,20 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     var span = heroH * .30;
     heartAt(intro + (1 - intro) * clamp01(span > 0 ? y / span : 0));
 
+    if (!wrapEl) return;
+
+    // Держим сердце на месте, компенсируя прокрутку своим сдвигом: так оно
+    // не уезжает недорисованным. position:fixed тут ненадёжен — родитель
+    // с overflow:hidden ведёт себя по-разному в разных браузерах.
+    var pin = Math.min(y, heroH * .45);
+
     // и растворяется, пока подъезжает письмо, чтобы не висеть над текстом
-    if (wrapEl) {
-      var a = heroH * .45, b = heroH * .72;
-      var f = 1 - clamp01((y - a) / (b - a));
-      wrapEl.style.opacity = f;
-      wrapEl.style.visibility = f <= .01 ? "hidden" : "visible";
-    }
+    var a = heroH * .45, b = heroH * .72;
+    var f = 1 - clamp01((y - a) / (b - a));
+
+    wrapEl.style.transform = "translateX(-50%) translateY(" + pin.toFixed(1) + "px)";
+    wrapEl.style.opacity = f;
+    wrapEl.style.visibility = f <= .01 ? "hidden" : "visible";
   }
 
   function boot() {
@@ -494,27 +501,25 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     paintWash();
 
     if (reduce) {
-      // Без анимации: сердце сразу целое. Но тогда некому его убрать со
-      // скроллом, поэтому возвращаем в поток — уедет вместе с первым экраном.
+      // Без анимации сердце сразу целое. Слушатели всё равно вешаем ниже —
+      // закрепление и растворение это не анимация, а позиционирование.
       intro = 1;
       heartAt(1);
-      if (rect) rect.setAttribute("height", 100);
-      if (wrapEl) { wrapEl.style.position = "absolute"; wrapEl.style.top = "12vh"; }
-      return;
+    } else {
+      heartAt(0);
+      // сердце начинает рисоваться само, чтобы экран не выглядел пустым
+      var t0 = null, DUR = 1500, TARGET = .34;
+      var step = function (ts) {
+        if (t0 === null) t0 = ts;
+        var k = Math.min(1, (ts - t0) / DUR);
+        intro = TARGET * (1 - Math.pow(1 - k, 3));
+        if (window.scrollY < 4) heartAt(intro);
+        if (k < 1) requestAnimationFrame(step); else onScroll();
+      };
+      requestAnimationFrame(step);
     }
 
-    heartAt(0);
-    // сердце начинает рисоваться само, чтобы экран не выглядел пустым
-    var t0 = null, DUR = 1500, TARGET = .34;
-    function step(ts) {
-      if (t0 === null) t0 = ts;
-      var k = Math.min(1, (ts - t0) / DUR);
-      var eased = 1 - Math.pow(1 - k, 3);
-      intro = TARGET * eased;
-      if (window.scrollY < 4) heartAt(intro);
-      if (k < 1) requestAnimationFrame(step); else onScroll();
-    }
-    requestAnimationFrame(step);
+    onScroll();
 
     var ticking = false;
     window.addEventListener("scroll", function () {
