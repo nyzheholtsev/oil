@@ -164,8 +164,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    заводят его на строку сверху и на строку снизу. */
 .pheart{
   font-size:clamp(28px,8vw,52px);
-  width:clamp(76px,22vw,124px);
-  margin:-.34em 0 -.30em;
+  width:clamp(84px,25vw,140px);
+  /* Снизу поле больше: путь сердца не достаёт до низа своего квадрата,
+     и часть отступа уходит на эту пустоту. */
+  margin:-.42em 0 -.62em;
   z-index:2;
 }
 .pheart svg{width:100%;height:auto;display:block;overflow:visible}
