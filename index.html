@@ -30,6 +30,10 @@
     sign: "",              // подпись
   };
 
+  // Нижняя часть страницы (письмо, видео, инструкция) временно спрятана,
+  // чтобы страница кончалась вместе с анимацией. true — вернуть обратно.
+  const SHOW_CONTENT = false;
+
   const MY_VIDEO = {
     url:   "",             // ссылка на ТВОЁ видео. Пусто — блок не покажется
     title: "Что это и как этим пользоваться",
@@ -163,26 +167,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   filter:url(#ink);
   will-change:clip-path;
   padding:0 .06em;
-}
-
-.hero-inner{
-  position:relative; z-index:3;
-  display:flex;flex-direction:column;gap:clamp(11px,2.6vw,16px);max-width:22ch;
-  opacity:0;
-}
-.pin .eyebrow{
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(255,225,232,.7);
-}
-.pin h1{
-  font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:clamp(38px,11vw,72px); font-weight:500; line-height:.96;
-  letter-spacing:-.01em; color:#FFF4F6; margin:0; text-wrap:balance;
-}
-.pin .sub{
-  font-size:clamp(15px,3.5vw,17px); color:rgba(255,228,235,.8);
-  max-width:32ch; line-height:1.5;
 }
 
 /* ===== общая колонка ===== */
@@ -338,15 +322,10 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       <span>Листай вниз</span>
     </div>
 
-    <div class="hero-inner" id="heroInner">
-      <p class="eyebrow">Открытка</p>
-      <h1 id="hero-title">С днём рождения</h1>
-      <p class="sub">Ты говорила, что хочешь попробовать масло. Держи.</p>
-    </div>
   </div>
 </section>
 
-<div class="wrap">
+<div class="wrap" id="content">
 
   <section class="letter" id="letter"></section>
 
@@ -404,8 +383,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   var T = {
     hint:   [0.00, 0.09],   // подсказка «листай» уходит
     lines:  [0.08, 0.74],   // на всю фразу, делится между строками поровну
-    heart:  [0.72, 0.90],   // сердце дорисовывается
-    title:  [0.88, 0.99],   // «С днём рождения» проявляется
+    heart:  [0.70, 0.96],   // сердце дорисовывается
     lineOverlap: 0.03,      // насколько строки наезжают друг на друга
   };
 
@@ -460,7 +438,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   /* ---------------- прогресс сцены ---------------- */
   var stage    = document.querySelector(".stage");
   var hintEl   = document.getElementById("hint");
-  var titleEl  = document.getElementById("heroInner");
   var railRect = document.getElementById("rail-rect");
 
   function stageProgress() {
@@ -482,7 +459,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     if (heart) heart.style.opacity = h;
     heartAt(h);
 
-    if (titleEl) titleEl.style.opacity = phase(p, T.title);
   }
 
   function onScroll() {
@@ -494,14 +470,13 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     render(stageProgress());
   }
 
+  /* ---------------- нижняя часть ---------------- */
+  var contentEl = document.getElementById("content");
+  if (!SHOW_CONTENT && contentEl) contentEl.style.display = "none";
+
   /* ---------------- письмо ---------------- */
   var L = document.getElementById("letter");
   var paras = (GREETING.text || []).filter(function (s) { return s && s.trim(); });
-
-  if (GREETING.to && GREETING.to.trim()) {
-    document.getElementById("hero-title").textContent =
-      "С днём рождения, " + GREETING.to.trim();
-  }
 
   if (paras.length) {
     paras.forEach(function (t) {
