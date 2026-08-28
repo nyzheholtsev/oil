@@ -442,7 +442,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     hint:    [0.00, 0.09],   // подсказка «листай» уходит
     seq:     [0.08, 0.76],   // очередь: строки и плюс, делится поровну
     heart:   [0.74, 0.97],   // большое сердце обводит всё за текстом
-    overlap: 0.03,           // насколько соседние элементы наезжают друг на друга
+    pause:   0.20,           // доля слота на паузу ПОСЛЕ строки, перед следующей
   };
 
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -492,7 +492,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     var n = items.length || 1;
     var w = (T.seq[1] - T.seq[0]) / n;
     var a = T.seq[0] + i * w;
-    return [a, a + w + T.overlap];
+    // строка укладывается в свой слот целиком, хвост слота — пауза,
+    // поэтому следующая не начинается, пока не дописана предыдущая
+    return [a, a + w * (1 - T.pause)];
   }
 
   /* ---------------- обмер букв ----------------
