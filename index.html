@@ -26,9 +26,9 @@
     "Я люблю тебя и по этому",
     "желаю тебе всего самого",
     { text: "самого",  scale: 1.25, cancel: "strike" },
-    { text: "самого",  scale: 1.55, cancel: "hatch"  },
-    { text: "самого",  scale: 1.9  },
-    { text: "лучшего", scale: 2.3, pink: true },
+    { text: "самого",  scale: 1.55, cancel: "hatch",  lift: 0.26 },
+    { text: "самого",  scale: 1.9,  cancel: "circle", lift: 0.24 },
+    { text: "лучшего", scale: 2.3,  pink: true },
   ];
 
   // Поцелуи, вылетающие по бокам на строке про любовь.
@@ -121,7 +121,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    Дольше/короче — меняй только height у .stage.                      */
 .stage{
   position:relative;
-  height:600vh; height:600svh;
+  height:460vh; height:460svh;
   background:var(--deep);
 }
 .pin{
@@ -457,7 +457,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   var T = {
     hint:    [0.00, 0.09],   // подсказка «листай» уходит
     seq:     [0.08, 0.76],   // очередь: строки и плюс, делится поровну
-    heart:   [0.74, 0.97],   // большое сердце обводит всё за текстом
+    heart:   [0.76, 1.00],   // сердце; доходит ровно до конца страницы
     pause:      0.20,        // хвост слота — пауза перед следующей строкой
     writeFast:  0.46,        // строка, которую потом зачёркивают, пишется быстрее
     cancelAt: [0.54, 0.90],  // доля слота, в которую идёт зачёркивание
@@ -476,7 +476,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         text:   String(e.text || ""),
         scale:  e.scale || 1,
         pink:   !!e.pink,
-        cancel: e.cancel || null      // "strike" | "hatch" | null
+        lift:   e.lift || 0,          // подъём к предыдущей строке, в em
+        cancel: e.cancel || null      // "strike" | "hatch" | "circle" | null
       };
     }
     return { text: String(e == null ? "" : e), scale: 1, pink: false, cancel: null };
@@ -493,6 +494,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     var row = document.createElement("div");
     row.className = "prow" + (isPlus ? " plus" : "") + (e.pink ? " pink" : "");
     if (e.scale !== 1) row.style.setProperty("--s", e.scale);
+    // строку-исправление подтягиваем к предыдущей: будто зачеркнул
+    // и тут же, не отрывая руки, написал новое
+    if (e.lift) row.style.marginTop = (-e.lift) + "em";
 
     var txt = document.createElement("span");
     txt.className = "ptext";
@@ -511,9 +515,14 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       svg.setAttribute("preserveAspectRatio", "none");
       svg.setAttribute("aria-hidden", "true");
       var path = document.createElementNS(NSU, "path");
-      path.setAttribute("d", e.cancel === "hatch"
-        ? "M3,25 L17,6 L28,25 L43,5 L54,25 L69,7 L80,25 L95,6"
-        : "M2,19 C22,12 44,20 62,14 C78,10 90,17 98,12");
+      var CANCEL_D = {
+        hatch:  "M3,25 L17,6 L28,25 L43,5 L54,25 L69,7 L80,25 L95,6",
+        strike: "M2,19 C22,12 44,20 62,14 C78,10 90,17 98,12",
+        // обводка с перехлёстом, как обводят от руки
+        circle: "M14,16 C14,7 32,3 51,3 C72,3 88,7 88,15 C88,24 68,28 49,28 " +
+                "C27,28 13,25 13,16 C13,10 20,6 30,4"
+      };
+      path.setAttribute("d", CANCEL_D[e.cancel] || CANCEL_D.strike);
       svg.appendChild(path);
       row.appendChild(svg);
       row._cancel = path;
@@ -610,11 +619,35 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     };
   }
 
-  var LIP_UP = "M6,34 C14,20 22,14 30,17 C38,20 45,26 50,29 " +
-               "C55,26 62,20 70,17 C78,14 86,20 94,34 " +
-               "C80,42 62,45 50,45 C38,45 20,42 6,34 Z";
-  var LIP_LO = "M8,41 C22,46 38,49 50,49 C62,49 78,46 92,41 " +
-               "C86,60 70,74 50,74 C30,74 14,60 8,41 Z";
+  // Губы строятся с разбросом по каждой опорной точке, поэтому
+  // каждый отпечаток получается своей формы, а не копией соседа.
+  function lipPaths(r) {
+    var j = function (m) { return (r() - 0.5) * m; };
+    var lc = 6 + j(4),    rc = 94 + j(4);          // уголки рта
+    var lp = 27 + j(5),   rp = 72 + j(5);          // вершины верхней губы
+    var lpY = 16 + j(5),  rpY = 17 + j(5);
+    var dipX = 50 + j(4), dipY = 29 + j(4);        // провал посередине
+    var midY = 44 + j(3);                          // линия смыкания
+    var botY = 73 + j(6);                          // нижний край
+    var n = function (v) { return v.toFixed(1); };
+
+    var up = "M" + n(lc) + "," + n(34 + j(4)) +
+      " C" + n(lc + 8) + "," + n(23 + j(4)) + " " + n(lp - 8) + "," + n(lpY - 2) + " " + n(lp) + "," + n(lpY) +
+      " C" + n(lp + 7) + "," + n(lpY + 4 + j(3)) + " " + n(dipX - 6) + "," + n(dipY - 5) + " " + n(dipX) + "," + n(dipY) +
+      " C" + n(dipX + 6) + "," + n(dipY - 5) + " " + n(rp - 7) + "," + n(rpY + 4 + j(3)) + " " + n(rp) + "," + n(rpY) +
+      " C" + n(rp + 8) + "," + n(rpY - 2) + " " + n(rc - 8) + "," + n(23 + j(4)) + " " + n(rc) + "," + n(34 + j(4)) +
+      " C" + n(rc - 14) + "," + n(midY - 2 + j(3)) + " " + n(62 + j(5)) + "," + n(midY) + " " + n(50 + j(4)) + "," + n(midY) +
+      " C" + n(38 + j(5)) + "," + n(midY) + " " + n(lc + 14) + "," + n(midY - 2 + j(3)) + " " + n(lc) + "," + n(34 + j(4)) + " Z";
+
+    var lo = "M" + n(lc + 3) + "," + n(midY - 3 + j(3)) +
+      " C" + n(22 + j(5)) + "," + n(midY + 3) + " " + n(38 + j(5)) + "," + n(midY + 6) + " " + n(50 + j(4)) + "," + n(midY + 6) +
+      " C" + n(62 + j(5)) + "," + n(midY + 6) + " " + n(78 + j(5)) + "," + n(midY + 3) + " " + n(rc - 3) + "," + n(midY - 3 + j(3)) +
+      " C" + n(rc - 8) + "," + n(60 + j(6)) + " " + n(70 + j(6)) + "," + n(botY) + " " + n(50 + j(5)) + "," + n(botY) +
+      " C" + n(30 + j(6)) + "," + n(botY) + " " + n(14 + j(5)) + "," + n(60 + j(6)) + " " + n(lc + 3) + "," + n(midY - 3 + j(3)) + " Z";
+
+    return [up, lo];
+  }
+
   var TINTS  = ["#D93A5E", "#E0567E", "#C9304F", "#EE6C8C"];
 
   // Отпечаток помады: две губы плюс маска из вертикальных трещинок.
@@ -637,11 +670,13 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
     // трещинки чуть расходятся от середины, как на настоящем отпечатке
     for (var x = 2; x < 100; x += 2.6 + r() * 2.4) {
-      var lean = (x - 50) * 0.07;
+      var lean = (x - 50) * 0.07 + (r() - 0.5) * 3;
+      var bow  = (r() - 0.5) * 5;
       var ln = document.createElementNS(N, "path");
-      ln.setAttribute("d", "M" + x.toFixed(1) + ",-2 L" + (x + lean).toFixed(1) + ",82");
+      ln.setAttribute("d", "M" + x.toFixed(1) + ",-2 Q" + (x + bow).toFixed(1) +
+                           ",40 " + (x + lean).toFixed(1) + ",82");
       ln.setAttribute("stroke", "#000");
-      ln.setAttribute("stroke-width", (0.45 + r() * 1.35).toFixed(2));
+      ln.setAttribute("stroke-width", (0.35 + r() * 1.7).toFixed(2));
       ln.setAttribute("fill", "none");
       mask.appendChild(ln);
     }
@@ -652,7 +687,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     g.setAttribute("mask", "url(#" + uid + ")");
     g.setAttribute("filter", "url(#ink)");
     var tint = TINTS[seed % TINTS.length];
-    [LIP_UP, LIP_LO].forEach(function (d) {
+    lipPaths(rng(seed * 313 + 7)).forEach(function (d) {
       var pth = document.createElementNS(N, "path");
       pth.setAttribute("d", d);
       pth.setAttribute("fill", tint);
