@@ -498,7 +498,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     } else {
       heartAt(0);
       // сердце начинает рисоваться само, чтобы экран не выглядел пустым
-      var t0 = null, DUR = 1500, TARGET = .34;
+      // TARGET — сколько сердца нарисовано, если она вообще не листает.
+      // Меньше половины читается как случайный мазок, а не как сердце.
+      var t0 = null, DUR = 1700, TARGET = .58;
       var step = function (ts) {
         if (t0 === null) t0 = ts;
         var k = Math.min(1, (ts - t0) / DUR);
