@@ -66,7 +66,8 @@ body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:'Golos Text','Segoe UI',system-ui,sans-serif;
   font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  /* ВАЖНО: никакого overflow на body — он делает его скролл-контейнером
+     и position:sticky у первого экрана перестаёт работать. */
 }
 p{margin:0}
 a{color:var(--accent-ink)}
@@ -80,24 +81,29 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 }
 .rail svg{display:block;width:100%;height:100%}
 
-/* ===== первый экран ===== */
-.hero{
-  position:relative; overflow:hidden; isolation:isolate;
-  min-height:100svh;
+/* ===== залипающий первый экран =====
+   .stage — высокая пустая сцена, она и задаёт длину прокрутки.
+   .pin   — то, что видно: липнет к верху и стоит на месте, пока сцена
+            проезжает мимо. Именно в это время идёт анимация.
+   Дольше/короче — меняй только height у .stage.                      */
+.stage{
+  position:relative;
+  height:240vh; height:240svh;
+  background:var(--deep);
+}
+.pin{
+  position:sticky; top:0;
+  height:100vh; height:100svh;
+  overflow:hidden; isolation:isolate;
   display:flex; flex-direction:column; justify-content:flex-end;
   padding:clamp(30px,7vw,64px);
   padding-left:calc(clamp(30px,7vw,64px) + clamp(9px,2.2vw,15px));
-  background:var(--deep);
 }
-.hero canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-3;display:block}
-.hero::after{
+.pin canvas{position:absolute;inset:0;width:100%;height:100%;z-index:-3;display:block}
+.pin::after{
   content:""; position:absolute; inset:0; z-index:-2;
   background:linear-gradient(180deg,rgba(46,14,29,.05) 0%,rgba(46,14,29,.42) 52%,rgba(46,14,29,.93) 100%);
 }
-/* Сердце висит неподвижно, пока идёт первый экран: так она видит,
-   как мазок замыкается, а не как он уезжает наверх недорисованным. */
-/* Сердце — фон всего первого экрана. Никакого закрепления и компенсации
-   скролла: пока виден первый экран, видно и сердце. Ломаться нечему. */
 .heartwrap{
   position:absolute; inset:0; z-index:-1;
   display:grid; place-items:center;
@@ -113,17 +119,17 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   position:relative; z-index:1;
   display:flex;flex-direction:column;gap:clamp(13px,3vw,18px);max-width:22ch;
 }
-.hero .eyebrow{
+.pin .eyebrow{
   font-family:'IBM Plex Mono','Consolas',monospace;
   font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
   color:rgba(255,225,232,.7);
 }
-.hero h1{
+.pin h1{
   font-family:'Cormorant Garamond',Georgia,serif;
   font-size:clamp(46px,14vw,92px); font-weight:500; line-height:.94;
   letter-spacing:-.01em; color:#FFF4F6; margin:0; text-wrap:balance;
 }
-.hero .sub{
+.pin .sub{
   font-size:clamp(15.5px,3.6vw,17.5px); color:rgba(255,228,235,.8);
   max-width:32ch; line-height:1.5;
 }
@@ -252,7 +258,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   </svg>
 </div>
 
-<header class="hero">
+<section class="stage">
+  <div class="pin">
   <canvas id="wash" aria-hidden="true"></canvas>
 
   <div class="heartwrap" aria-hidden="true">
@@ -282,7 +289,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     <p class="sub">Ты говорила, что хочешь попробовать масло. Держи.</p>
     <div class="scrollhint"><i aria-hidden="true">&#8595;</i><span>Листай</span></div>
   </div>
-</header>
+  </div>
+</section>
 
 <div class="wrap">
 
@@ -448,7 +456,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   var main = document.getElementById("heart-main");
   var hi   = document.getElementById("heart-hi");
   var rect = document.getElementById("rail-rect");
-  var hero = document.querySelector(".hero");
+  var stage    = document.querySelector(".stage");
+  var pinInner = document.querySelector(".hero-inner");
+  var heartEl  = document.querySelector(".heartwrap");
   var len  = 0;
 
   function setup() {
@@ -471,19 +481,39 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
+  /* ТАЙМЛАЙН ЗАЛИПШЕГО ЭКРАНА — единственное место, где правится анимация.
+     0 = сцена только вошла, экран прилип к верху.
+     1 = сцена кончилась, экран сейчас отлипнет и уедет.
+     Значения — [начало, конец] в долях прокрутки сцены.               */
+  var TIMELINE = {
+    heart: [0.00, 0.68],   // мазок дорисовывает сердце
+    fade:  [0.86, 1.00],   // всё растворяется перед письмом
+  };
+
+  function phase(p, r) { return clamp01((p - r[0]) / (r[1] - r[0])); }
+
+  // 0 -> 1 по мере того, как сцена проезжает мимо залипшего экрана
+  function stageProgress() {
+    if (!stage) return 0;
+    var total = stage.offsetHeight - window.innerHeight;
+    if (total <= 0) return 0;
+    return clamp01(-stage.getBoundingClientRect().top / total);
+  }
+
   function onScroll() {
-    var y = window.scrollY;
-
-    // полоса слева = прогресс по всей странице
+    // полоса слева — прогресс по всей странице, не по сцене
     var docH = document.documentElement.scrollHeight - window.innerHeight;
-    if (rect) rect.setAttribute("height", (clamp01(docH > 0 ? y / docH : 0) * 100).toFixed(2));
+    if (rect) {
+      rect.setAttribute("height",
+        (clamp01(docH > 0 ? window.scrollY / docH : 0) * 100).toFixed(2));
+    }
 
-    var heroH = hero ? hero.offsetHeight : window.innerHeight;
+    var p = stageProgress();
+    heartAt(intro + (1 - intro) * phase(p, TIMELINE.heart));
 
-    // сердце дорисовывается за первые 30% первого экрана
-    var span = heroH * .30;
-    heartAt(intro + (1 - intro) * clamp01(span > 0 ? y / span : 0));
-
+    var out = 1 - phase(p, TIMELINE.fade);
+    if (pinInner) pinInner.style.opacity = out;
+    if (heartEl)  heartEl.style.opacity  = out;
   }
 
   function boot() {
@@ -500,7 +530,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       // сердце начинает рисоваться само, чтобы экран не выглядел пустым
       // TARGET — сколько сердца нарисовано, если она вообще не листает.
       // Меньше половины читается как случайный мазок, а не как сердце.
-      var t0 = null, DUR = 1700, TARGET = .58;
+      var t0 = null, DUR = 1700, TARGET = .20;
       var step = function (ts) {
         if (t0 === null) t0 = ts;
         var k = Math.min(1, (ts - t0) / DUR);
