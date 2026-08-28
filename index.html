@@ -12,19 +12,32 @@
      ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай.
      ============================================================ */
 
-  // Розовый плюс между строками — ставь PLUS там, где он нужен.
+  // Розовый плюс — если понадобится, поставь PLUS в любое место PHRASE.
   const PLUS = "+";
 
   // Что пишется по очереди на первом экране.
-  // Добавляй и убирай строки свободно — тайминг поделится сам.
+  // Строка — либо просто текст, либо объект:
+  //   scale — во сколько раз крупнее обычной строки
+  //   pink  — розовым цветом
   const PHRASE = [
     "Моя Света",
-    "Я поздравляю тебя",
-    "Тебе сегодня 18 лет",
-    "Я люблю тебя",
-    PLUS,
-    "желаю всего самого лучшего",
+    "я поздравляю тебя",
+    "тебе сегодня 18 лет",
+    "Я люблю тебя и по этому",
+    "желаю тебе всего самого",
+    { text: "самого",  scale: 1.25 },
+    { text: "самого",  scale: 1.55 },
+    { text: "самого",  scale: 1.9  },
+    { text: "лучшего", scale: 2.3, pink: true },
   ];
+
+  // Поцелуи, вылетающие по бокам на строке про любовь.
+  // onLine — номер строки в PHRASE, считая с нуля.
+  // images — имена файлов рядом с index.html, например ["kiss1.png","kiss2.png"].
+  const KISSES = {
+    onLine: 3,
+    images: [],
+  };
 
   const GREETING = {
     to:   "",              // её имя. Пусто — будет просто «С днём рождения»
@@ -163,8 +176,9 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 .pline{
   font-family:'Caveat','Segoe Script',cursive;
   font-weight:600;
-  font-size:clamp(28px,8vw,52px);
-  line-height:1.1;
+  /* --s — множитель размера, задаётся из PHRASE через scale */
+  font-size:calc(clamp(28px,8vw,52px) * var(--s,1));
+  line-height:1.08;
   color:#FFEAF0;
   /* пишется слева направо; 100% — ещё ничего не написано */
   clip-path:inset(-14% var(--r,100%) -14% -6%);
@@ -176,6 +190,17 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    заводят его на строку сверху и на строку снизу. */
 /* Плюс вклинивается между двумя последними строками: отрицательные
    поля заводят его на строку сверху и на строку снизу. */
+.pline.pink{color:#F0819E}
+
+/* Поцелуи по бокам экрана */
+.kisses{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.kiss{
+  position:absolute;
+  width:clamp(58px,18vw,116px);
+  opacity:0;
+  will-change:transform,opacity;
+}
+
 .pplus{
   font-family:'Caveat','Segoe Script',cursive;
   font-weight:700;
@@ -332,6 +357,8 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
       </svg>
     </div>
 
+    <div class="kisses" id="kisses" aria-hidden="true"></div>
+
     <div class="phrase" id="phrase" aria-hidden="true"></div>
     <p class="sr" id="phrase-a11y"></p>
 
@@ -410,22 +437,33 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 
   /* ---------------- сборка очереди ---------------- */
   var phraseEl = document.getElementById("phrase");
-  var raw = (typeof PHRASE !== "undefined" ? PHRASE : []).filter(function (t) {
-    return t && String(t).trim();
-  });
+
+  // строка может быть текстом или объектом {text, scale, pink}
+  function norm(e) {
+    if (e && typeof e === "object") {
+      return { text: String(e.text || ""), scale: e.scale || 1, pink: !!e.pink };
+    }
+    return { text: String(e == null ? "" : e), scale: 1, pink: false };
+  }
+
+  var raw = (typeof PHRASE !== "undefined" ? PHRASE : [])
+    .map(norm)
+    .filter(function (e) { return e.text.trim(); });
   var items = [];
 
-  raw.forEach(function (t) {
+  raw.forEach(function (e) {
     var el = document.createElement("div");
-    var isPlus = (typeof PLUS !== "undefined" && t === PLUS);
-    el.className = isPlus ? "pplus" : "pline";
-    el.textContent = t;
+    var isPlus = (typeof PLUS !== "undefined" && e.text === PLUS);
+    el.className = isPlus ? "pplus" : ("pline" + (e.pink ? " pink" : ""));
+    el.textContent = e.text;
+    if (!isPlus && e.scale !== 1) el.style.setProperty("--s", e.scale);
     phraseEl.appendChild(el);
     items.push(el);
   });
 
   document.getElementById("phrase-a11y").textContent =
-    raw.filter(function (t) { return t !== PLUS; }).join(". ");
+    raw.filter(function (e) { return e.text !== PLUS; })
+       .map(function (e) { return e.text; }).join(". ");
 
   // диапазон прокрутки, за который проявляется i-й элемент очереди
   function itemRange(i) {
@@ -433,6 +471,48 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     var w = (T.seq[1] - T.seq[0]) / n;
     var a = T.seq[0] + i * w;
     return [a, a + w + T.overlap];
+  }
+
+  /* ---------------- поцелуи ---------------- */
+  // Точки вылета: сторона, высота, наклон и момент внутри строки.
+  var SPOTS = [
+    { side: "left",  top: "24%", rot: -18, at: 0.06 },
+    { side: "right", top: "36%", rot:  14, at: 0.24 },
+    { side: "left",  top: "56%", rot:  11, at: 0.42 },
+    { side: "right", top: "64%", rot: -13, at: 0.58 },
+    { side: "left",  top: "74%", rot:  17, at: 0.74 },
+    { side: "right", top: "18%", rot:  -9, at: 0.88 }
+  ];
+  var kissEls = [];
+  var kissBox = document.getElementById("kisses");
+
+  ((typeof KISSES !== "undefined" && KISSES.images) || []).forEach(function (src, i) {
+    var sp = SPOTS[i % SPOTS.length];
+    var img = document.createElement("img");
+    img.className = "kiss";
+    img.src = src;
+    img.alt = "";
+    img.style.top = sp.top;
+    img.style[sp.side] = "2vw";
+    kissBox.appendChild(img);
+    kissEls.push({ el: img, sp: sp });
+  });
+
+  function renderKisses(p) {
+    if (!kissEls.length) return;
+    var idx = (typeof KISSES !== "undefined" ? KISSES.onLine : 0) | 0;
+    if (idx < 0 || idx >= items.length) return;
+    var w = phase(p, itemRange(idx));
+
+    kissEls.forEach(function (k) {
+      var t = clamp01((w - k.sp.at) / 0.18);
+      var dir = k.sp.side === "left" ? -1 : 1;
+      k.el.style.opacity = t;
+      k.el.style.transform =
+        "translateX(" + (dir * (1 - t) * 48).toFixed(1) + "px)" +
+        " scale(" + (0.55 + 0.45 * t).toFixed(3) + ")" +
+        " rotate(" + k.sp.rot + "deg)";
+    });
   }
 
   /* ---------------- большое сердце ---------------- */
@@ -474,6 +554,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     });
 
     heartAt(phase(p, T.heart));
+    renderKisses(p);
 
     if (hintEl) hintEl.style.opacity = 1 - phase(p, T.hint);
   }
