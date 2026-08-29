@@ -9,7 +9,7 @@
 
 <script>
   /* ============================================================
-     ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай.
+     ЗДЕСЬ ВСЁ, ЧТО НАДО ЗАПОЛНИТЬ. Больше нигде ничего не трогай. 
      ============================================================ */
 
   // Розовый плюс — если понадобится, поставь PLUS в любое место PHRASE.
@@ -334,7 +334,7 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
    Внутри розовой открытки чужая палитра смотрелась бы заплаткой,
    поэтому цвета берутся общие, а собственной осталась типографика:
    Bitter в заголовках, моноширинный в подписях, таблицы. Всё
-   заперто в .gd — у открытки свои .sechead и .eyebrow, они разные. */
+   заперто в .gd: .sechead есть и у открытки, и тут — они разные. */
 .gd{display:flex;flex-direction:column;gap:clamp(26px,5vw,40px);padding-top:4px}
 .gd section{display:flex;flex-direction:column;gap:15px}
 .gd h2,.gd h3{font-family:'Bitter',Georgia,serif;text-wrap:balance;margin:0}
@@ -343,11 +343,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 .gd p{margin:0}
 .gd .sechead{display:flex;flex-direction:column;gap:6px;padding-bottom:11px;
              border-bottom:2px solid var(--ink)}
-.gd .eyebrow{
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--accent-ink);margin:0;
-}
 .gd .lede{font-size:clamp(15.5px,3.4vw,17px);color:var(--ink-2);line-height:1.55;max-width:56ch}
 .gd .lede strong{color:var(--ink);font-weight:600}
 
@@ -383,6 +378,14 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   font-size:14.5px;line-height:1.5;color:var(--ink-2);
 }
 .gd .warn b{color:var(--ink);font-weight:600}
+.gd .donts{margin:0;padding:0;list-style:none;
+           display:flex;flex-direction:column;gap:9px}
+.gd .donts li{
+  background:var(--umber-soft);border-left:2px solid var(--umber);
+  padding:12px 15px;border-radius:0 3px 3px 0;
+  font-size:14.5px;line-height:1.5;color:var(--ink-2);
+}
+.gd .donts li b{color:var(--ink);font-weight:600}
 .gd .note{font-size:13.5px;color:var(--ink-3);line-height:1.5}
 
 .gd .tablebox{
@@ -470,12 +473,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 }
 .pnote:empty{display:none}
 
-.foot{
-  border-top:1px solid var(--rule);padding-top:22px;
-  display:flex;align-items:center;gap:10px;
-  font-size:13.5px;color:var(--ink-3);line-height:1.55;
-}
-.foot .mini{width:15px;height:15px;flex:0 0 auto;color:var(--accent);opacity:.65}
 
 @media (prefers-reduced-motion:reduce){
   .hint i{animation:none}
@@ -577,31 +574,24 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     <div class="gd" id="guide" hidden>
   <section>
     <div class="sechead">
-      <p class="eyebrow">Перед первым разом</p>
       <h2>Что приготовить</h2>
     </div>
     <ol class="steps">
-      <li><b>Палитра.</b> В наборе её нет — подойдёт любое гладкое и не впитывающее: керамическая тарелка, кафельная плитка, кусок стекла. Бумагу и картон не бери, вытянут из краски связующее.</li>
-      <li><b>Две банки воды.</b> Одна полоскать кисть — она быстро станет грязной, вторая чистая.</li>
-      <li><b>Тряпок больше, чем кажется.</b> И застели стол.</li>
-      <li><b>Три цвета, не восемь.</b> Пока не привыкла к материалу, так работа держится собранной.</li>
-      <li><b>Мешай ножом, а не кистью.</b> Размешивать краску кистью, как ложкой, — верный способ её убить. Подойдёт мастихин, старая пластиковая карта, любой ножик.</li>
-      <li><b>Не оставляй кисть стоять ворсом вниз.</b> Волос загнётся навсегда.</li>
+      <li><b>Палитра.</b> Подойдёт твоя зайка просто помоешь её с мылом и водой</li>
+      <li><b>Две банки воды.</b> Одна полоскать кисть, вторая смешивать с краской</li>
+      <li><b>Тряпки.</b> Застели столик, а то потом не кайф будет.</li>
+      <li><b>Что то для смешивания</b> Короче если смешивать краску кисточкой, то кисточкам будет не Guten Tag. Используй какую то карточку пластиковую нож, или специальную штуку какую то.</li>
     </ol>
   </section>
 
   <section>
     <div class="sechead">
-      <p class="eyebrow">Главное в наборе</p>
       <h2>Malmittel: когда лить и сколько</h2>
     </div>
-
-    <p class="lede">Единственная бутылочка в наборе, и из-за неё чаще всего всё портят — льют слишком много и слишком рано.</p>
 
     <div class="items">
       <article class="item">
         <h3>Три способа взять краску</h3>
-        <p class="de">так это описывают сами Schmincke</p>
         <p><b>Чистой из тюбика</b> — плотный корпусный мазок, держит форму, виден след кисти.</p>
         <p><b>С каплей воды</b> — жиже и матовее, так делают первые подмалёвочные слои.</p>
         <p><b>С медиумом</b> — текучая и прозрачная, под кистью то самое масляное скольжение, заметно сильнее, чем от воды.</p>
@@ -631,58 +621,30 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
         <p><b>Краска загустела за сеанс.</b> Верни её каплей медиума, а не водой: вода сделает её матовой и рыхлой.</p>
       </article>
     </div>
-
-    <div class="warn"><b>Что в него не лить:</b> льняное масло, уайт-спирит, пинен, разбавители для классического масла. Любое из этого — и краска перестанет разводиться и смываться водой, то есть пропадёт весь смысл линейки. Разбавителя тут два: вода и этот медиум.</div>
-    <p class="note">Быстрее сохнуть от медиума не станет. На скорость влияют отдельные добавки — Trocknungsbeschleuniger ускоряет, Trocknungsverzögerer замедляет. В наборе их нет, и для начала они не нужны.</p>
   </section>
 
   <section>
     <div class="sechead">
-      <p class="eyebrow">После работы</p>
-      <h2>Кисти, сушка, тряпки</h2>
+      <h2>Кисти и сушка</h2>
     </div>
-    <ol class="steps">
-      <li><b>Кисти — сразу, тёплой водой с мылом.</b> Мыль в ладони, пока пена не пойдёт чистой. Растворитель не нужен, в этом весь смысл.</li>
-      <li><b>Суши горизонтально или ворсом вверх.</b> Никогда ворсом вниз в стакане: вода затечёт в обойму, клей разбухнет и кисть развалится.</li>
-      <li><b>Работа сохнет днями.</b> На отлип — пара дней, насквозь — недели. Не складывай листы друг на друга, пока не высохли.</li>
-      <li><b>Не суши феном и не ставь на батарею</b> — слой потрескается. Масло должно сохнуть само.</li>
+    <p><b>Кисти мой сразу</b>, тёплой водой с мылом. Мыль в ладони, пока пена не пойдёт чистой. Растворитель не нужен — в этом весь смысл этой краски.</p>
+    <p><b>Работа сохнет днями.</b> На отлип — пара дней, насквозь — недели. Это не акрил, торопиться некуда.</p>
+  </section>
+
+  <section>
+    <div class="sechead">
+      <h2>Осторожно</h2>
+    </div>
+    <ul class="donts">
+      <li><b>Не оставляй кисть стоять ворсом вниз.</b> Волос загнётся навсегда.</li>
+      <li><b>Суши кисть горизонтально или ворсом вверх.</b> Ворсом вниз в стакане вода затечёт в обойму, клей разбухнет и кисть развалится.</li>
+      <li><b>Не складывай листы друг на друга, пока не высохли.</b> Слипнутся и оба испортятся.</li>
+      <li><b>Не суши феном и не ставь на батарею.</b> Слой потрескается — масло должно сохнуть само.</li>
       <li><b>Промасленные тряпки расправь</b>, дай высохнуть и только потом выбрасывай. Скомканная промасленная ткань может сама разогреться. Вероятность мизерная, но правило бесплатное.</li>
-    </ol>
-  </section>
-
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">Словарик</p>
-      <h2>Что написано на тюбиках</h2>
-    </div>
-    <div class="tablebox">
-      <table>
-        <thead><tr><th>По-немецки</th><th>Что значит</th></tr></thead>
-        <tbody>
-      <tr><td class="de">Ölfarbe</td><td>масляная краска</td></tr>
-        <tr><td class="de">wasservermalbar</td><td>водосмешиваемая — разводится и моется водой</td></tr>
-        <tr><td class="de">Malmittel</td><td>медиум, «средство для живописи»</td></tr>
-        <tr><td class="de">flach / rund</td><td>плоская / круглая кисть</td></tr>
-        <tr><td class="de">Ölmalblock</td><td>блок бумаги для масла</td></tr>
-        <tr><td class="de">Titanweiß</td><td>титановые белила</td></tr>
-        <tr><td class="de">Elfenbeinschwarz</td><td>чёрная «слоновая кость»</td></tr>
-        <tr><td class="de">Ultramarin</td><td>ультрамарин</td></tr>
-        <tr><td class="de">Zitronengelb</td><td>лимонный жёлтый</td></tr>
-        <tr><td class="de">Krapplack</td><td>краплак</td></tr>
-        <tr><td class="de">Umbra gebrannt</td><td>жжёная умбра</td></tr>
-        <tr><td class="de">Siena gebrannt</td><td>жжёная сиена</td></tr>
-        <tr><td class="de">Permanentgrün</td><td>перманентный зелёный</td></tr>
-        </tbody>
-      </table>
-    </div>
+    </ul>
   </section>
     </div>
   </section>
-
-  <footer class="foot">
-    <svg class="mini" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,87 C50,87 9,58 9,33 C9,17 21,9 33,9 C42,9 47,15 50,21 C53,15 58,9 67,9 C79,9 91,17 91,33 C91,58 50,87 50,87 Z" fill="currentColor"/></svg>
-    <span>Набор собран в Германии — такие краски здесь найти проще.</span>
-  </footer>
 
 </div>
 
