@@ -328,9 +328,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
   font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;
   font-size:clamp(18px,4vw,21px);color:var(--ink-2);
 }
-  font-family:'IBM Plex Mono','Consolas',monospace;
-  font-size:13px;line-height:1.6;color:var(--ink-3);
-}
 
 /* ===== инструкция внутри открытки =====
    Раньше это была отдельная страница со своей сине-графитовой темой.
@@ -353,22 +350,6 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
 }
 .gd .lede{font-size:clamp(15.5px,3.4vw,17px);color:var(--ink-2);line-height:1.55;max-width:56ch}
 .gd .lede strong{color:var(--ink);font-weight:600}
-
-.gd .key{
-  background:var(--accent);border-radius:4px;color:#FFF;
-  padding:clamp(18px,4.5vw,26px);display:flex;flex-direction:column;gap:10px;
-}
-.gd .key p{font-size:clamp(17px,4vw,20px);line-height:1.4;font-weight:500;color:#FFF}
-.gd .key .sub{font-size:14.5px;font-weight:400;line-height:1.5;color:rgba(255,255,255,.87)}
-/* в тёмной теме акцент светлый — текст на нём должен стать тёмным */
-:root[data-theme="dark"] .gd .key,
-:root[data-theme="dark"] .gd .key p{color:#2A1119}
-:root[data-theme="dark"] .gd .key .sub{color:rgba(42,17,25,.78)}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]) .gd .key,
-  :root:not([data-theme="light"]) .gd .key p{color:#2A1119}
-  :root:not([data-theme="light"]) .gd .key .sub{color:rgba(42,17,25,.78)}
-}
 
 .gd .items{display:flex;flex-direction:column;gap:11px}
 .gd .item{
@@ -594,52 +575,13 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-of
     </div>
 
     <div class="gd" id="guide" hidden>
-  <div class="key">
-    <p>Разводится водой и смывается водой — даже с рук, обычным мылом. Перчатки не нужны, запаха нет, можно работать дома.</p>
-    <p class="sub">Но это настоящее масло: тот же пигмент, то же связующее, так же медленно сохнет. <b>Blue</b> в названии — не цвет, а линейка водосмешиваемого масла.</p>
-  </div>
-
-  <section>
-    <div class="sechead">
-      <p class="eyebrow">Коротко</p>
-      <h2>Что в коробке</h2>
-    </div>
-
-    <div class="items">
-      <article class="item">
-        <h3>8 тюбиков по 35 мл</h3>
-        <p class="de">Norma Blue · Ölfarbe</p>
-        <p>Сильно пигментированные, поэтому начинать проще <b>со светлых участков</b> и уходить в тёмные. В линейке 48 цветов, все продаются поштучно.</p>
-      </article>
-
-      <article class="item">
-        <h3>Медиум, 60 мл</h3>
-        <p class="de">Malmittel Blue</p>
-        <p>Единственное, в чём стоит разобраться заранее — <b>раздел про него ниже</b>. Обычное льняное масло сюда лить нельзя.</p>
-      </article>
-
-      <article class="item">
-        <h3>6 кистей, синтетика</h3>
-        <p class="de">da Vinci College · flach / rund</p>
-        <p>Синтетика тут не экономия: в работе вода, натуральный волос от неё разбухает. Плоские — заливки и границы, круглые — детали и блики.</p>
-      </article>
-
-      <article class="item">
-        <h3>Блок бумаги 24×32, 10 листов</h3>
-        <p class="de">Ölmalblock · Grobleinen, 230 г/м²</p>
-        <p>Загрунтована — масло её не проест, фактура под грубый лён. Дальше дешевле всего холст на картоне.</p>
-      </article>
-    </div>
-
-    <div class="warn"><b>Палитры в наборе нет.</b> Подойдёт любое гладкое и не впитывающее: керамическая тарелка, кафельная плитка, кусок стекла. Бумагу и картон не бери — вытянут из краски связующее.</div>
-  </section>
-
   <section>
     <div class="sechead">
       <p class="eyebrow">Перед первым разом</p>
       <h2>Что приготовить</h2>
     </div>
     <ol class="steps">
+      <li><b>Палитра.</b> В наборе её нет — подойдёт любое гладкое и не впитывающее: керамическая тарелка, кафельная плитка, кусок стекла. Бумагу и картон не бери, вытянут из краски связующее.</li>
       <li><b>Две банки воды.</b> Одна полоскать кисть — она быстро станет грязной, вторая чистая.</li>
       <li><b>Тряпок больше, чем кажется.</b> И застели стол.</li>
       <li><b>Три цвета, не восемь.</b> Пока не привыкла к материалу, так работа держится собранной.</li>
